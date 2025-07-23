@@ -1,0 +1,71 @@
+{
+  "name": "智能房源分析平台",
+  "description": "Claude + Gemini 驅動的 AI 房源分析平台開發專案",
+  "version": "2.0.0",
+  "mcpServers": {
+    "@21st-dev/magic": {
+      "command": "npx",
+      "args": ["-y", "@21st-dev/magic@latest", "API_KEY=\"2f7832c86dfbe8e3c61e329443a5ff1b2c0c9b6e9ecfb1514d5d9a8db102ebaf\""],
+      "env": {
+        "NODE_ENV": "development",
+        "PROJECT_TYPE": "rental-analysis-platform",
+        "DESIGN_SYSTEM": "modern-tech",
+        "PRIMARY_COLOR": "#0400ff",
+        "ACCENT_COLOR": "#00ffcc",
+        "INTERACTIVE_COLOR": "#ff00c8",
+        "TARGET_FRAMEWORK": "react",
+        "CSS_FRAMEWORK": "tailwindcss",
+        "FONT_FAMILY": "Outfit"
+      }
+    },
+    "mcp-server-firecrawl": {
+      "command": "npx",
+      "args": ["-y", "firecrawl-mcp"],
+      "env": {
+        "FIRECRAWL_API_KEY": "fc-6f5e1e3b20174bdeb0b5250e54238476"
+      }
+    }
+  },
+  "integrations": {
+    "uxpilot": {
+      "enabled": true,
+      "context": "modern-tech-rental-platform"
+    },
+    "v0dev": {
+      "enabled": true,
+      "style": "modern-tech-dashboard"
+    },
+    "claude": {
+      "role": "analysis-and-architecture",
+      "capabilities": ["property-analysis", "market-insights", "recommendation-engine"]
+    },
+    "gemini": {
+      "role": "visual-processing",
+      "capabilities": ["image-recognition", "batch-search", "similarity-detection"]
+    }
+  },
+  "development": {
+    "phases": [
+      {
+        "name": "design",
+        "tools": ["uxpilot", "@21st-dev/magic"],
+        "deliverables": ["wireframes", "hi-fi-mockups", "component-specs"]
+      },
+      {
+        "name": "development", 
+        "tools": ["@21st-dev/magic", "v0dev"],
+        "deliverables": ["react-components", "api-integration", "responsive-layouts"]
+      },
+      {
+        "name": "integration",
+        "tools": ["claude-code", "@21st-dev/magic"],
+        "deliverables": ["ai-integration", "data-flow", "testing"]
+      },
+      {
+        "name": "deployment",
+        "tools": ["replit", "@21st-dev/magic"],
+        "deliverables": ["production-build", "environment-setup", "monitoring"]
+      }
+    ]
+  }
+}

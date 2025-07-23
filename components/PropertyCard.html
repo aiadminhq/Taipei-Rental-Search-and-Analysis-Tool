@@ -1,0 +1,53 @@
+
+<!-- components/PropertyCard.html -->
+<!-- Design inspired by adamgiebl (uiverse.io) -->
+<div x-data="propertyCard(property)" class="relative flex flex-col mt-6 text-gray-700 bg-white shadow-md bg-clip-border rounded-xl w-full hover:shadow-lg transition-all duration-300 ease-in-out">
+  <div class="relative h-56 mx-4 -mt-6 overflow-hidden text-white shadow-lg bg-clip-border rounded-xl bg-blue-gray-500 shadow-blue-gray-500/40">
+    <img :src="property.image || 'https://images.unsplash.com/photo-1540553016722-983e48a2cd10?ixlib=rb-1.2.1&amp;ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&amp;auto=format&amp;fit=crop&amp;w=800&amp;q=80'" alt="card-image" class="w-full h-full object-cover" loading="lazy" />
+    <!-- Badges -->
+    <div class="absolute top-4 left-4">
+      <span :class="getScoreBadgeClass(property.score)" class="text-white text-xs font-medium px-2.5 py-1 rounded-full" x-text="property.score + '分'"></span>
+    </div>
+    <div class="absolute top-4 right-4">
+      <span :class="getStatusBadgeClass(property.status)" class="text-xs font-medium px-2.5 py-1 rounded-full" x-text="getStatusText(property.status)"></span>
+    </div>
+  </div>
+  <div class="p-6 flex flex-col flex-grow">
+    <div class="flex items-center justify-between mb-2">
+        <h5 class="block font-sans text-xl antialiased font-semibold leading-snug tracking-normal text-blue-gray-900" x-text="property.title"></h5>
+        <p class="flex items-center gap-1.5 font-sans text-base font-normal leading-relaxed text-blue-gray-900 antialiased">
+            <i data-lucide="tag" class="w-5 h-5 text-primary-500"></i>
+            <span class="text-xl font-bold text-primary-600" x-text="'
+
+ + (property.price ? property.price.toLocaleString() : 'N/A')"></span>
+        </p>
+    </div>
+    <p class="block font-sans text-sm antialiased font-light leading-relaxed text-inherit mb-4" x-text="property.address"></p>
+    
+    <div class="flex items-center text-sm text-gray-600 mb-4">
+        <i data-lucide="home" class="w-4 h-4 mr-1.5"></i>
+        <span x-text="property.roomType || 'N/A'"></span>
+        <span class="mx-2">•</span>
+        <i data-lucide="maximize" class="w-4 h-4 mr-1.5"></i>
+        <span x-text="(property.area ? property.area + '坪' : 'N/A')"></span>
+    </div>
+
+    <div class="mb-4 flex-grow">
+      <p class="block font-sans text-sm antialiased font-normal leading-relaxed text-gray-700">
+        Tags:
+      </p>
+      <div class="flex flex-wrap gap-1 mt-2">
+        <template x-for="tag in property.tags" :key="tag">
+          <span class="text-xs inline-block py-1 px-2.5 leading-none text-center whitespace-nowrap align-baseline font-bold bg-gray-200 text-gray-700 rounded-full" x-text="tag"></span>
+        </template>
+      </div>
+    </div>
+    
+    <div class="pt-2">
+      <button @click="viewProperty(property)" class="align-middle select-none font-sans font-bold text-center uppercase transition-all disabled:opacity-50 disabled:shadow-none disabled:pointer-events-none text-xs py-3 px-6 rounded-lg bg-primary-600 text-white shadow-md shadow-gray-900/10 hover:shadow-lg hover:shadow-gray-900/20 focus:opacity-[0.85] focus:shadow-none active:opacity-[0.85] active:shadow-none w-full">
+        查看詳情
+      </button>
+    </div>
+  </div>
+</div>
+

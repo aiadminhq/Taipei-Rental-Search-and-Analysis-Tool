@@ -1,0 +1,12 @@
+<!-- components/ProgressIndicator.html -->
+<div x-data="progressIndicator(progress)" class="bg-gray-50 rounded-lg p-4">
+    <div class="flex items-center justify-between mb-2">
+        <span class="text-sm font-medium text-gray-700">處理進度</span>
+        <span class="text-sm text-gray-500" x-text="progress.percent + '%'"></span>
+    </div>
+    <div class="w-full bg-gray-200 rounded-full h-2">
+        <div class="bg-primary-600 h-2 rounded-full transition-all duration-300" 
+             :style="'width: ' + progress.percent + '%'"></div>
+    </div>
+    <p class="text-sm text-gray-600 mt-2" x-text="progress.message"></p>
+</div>

@@ -1,0 +1,12 @@
+<!-- components/StatisticsCard.html -->
+<div class="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
+    <div class="flex items-center justify-between">
+        <div>
+            <p class="text-sm text-gray-600" x-text="stat.label"></p>
+            <p class="text-2xl font-semibold" :class="stat.color" x-text="stat.value"></p>
+        </div>
+        <div :class="stat.bgColor" class="p-2 rounded-lg">
+            <i :data-lucide="stat.icon" class="w-6 h-6" :class="stat.color"></i>
+        </div>
+    </div>
+</div>
