@@ -4,9 +4,10 @@ export default defineConfig({
   testDir: './e2e',
   timeout: 30_000,
   // Sandboxed/offline-CDP-emulation runs occasionally hit an environment-level stall
-  // (e.g. a blocked third-party request racing the offline network emulation); a
-  // couple of retries absorb that without masking a real, deterministic failure.
-  retries: 2,
+  // (e.g. a blocked third-party request racing the offline network emulation); one
+  // CI retry absorbs that without masking a real, deterministic failure — kept off
+  // locally so flakiness stays visible instead of being silently retried away.
+  retries: process.env.CI ? 1 : 0,
   reporter: process.env.CI ? [['html', { open: 'never' }], ['list']] : 'list',
   use: {
     baseURL: 'http://localhost:4173',
