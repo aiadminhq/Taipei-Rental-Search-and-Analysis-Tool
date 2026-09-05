@@ -17,6 +17,8 @@
 ## 📚 文檔索引
 
 ### 核心設計
+- **[MVP 設計規格 (2026-09-05, 現行開發依據)](./superpowers/specs/2026-09-05-pwa-rental-mvp-design.md)**
+- **[資料來源擷取可行性調查 (2026-09-05)](./superpowers/research/2026-09-05-rental-source-ingestion-research.md)**
 - **[產品需求文檔 (PRD)](./00_Project_Blueprints/PRD_Master.md)**
 - **[應用程式藍圖 (App Blueprint)](./00_Project_Blueprints/App_Blueprint_Master.md)**
 - **[資料庫結構](./00_Project_Blueprints/資料庫欄位.md)**
