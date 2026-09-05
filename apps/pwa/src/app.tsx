@@ -1,10 +1,11 @@
 import { useEffect } from 'preact/hooks';
-import { useHashRoute } from './router';
+import { matchPath, useHashRoute } from './router';
 import { BottomNav } from './components/BottomNav';
 import { ToastHost } from './components/Toast';
 import { ShareScreen } from './screens/Share';
 import { InboxScreen } from './screens/Inbox';
 import { ListingsScreen } from './screens/Listings';
+import { DetailScreen } from './screens/Detail';
 import { readSharePayload, stashShare } from './lib/share';
 import { useLive } from './hooks';
 import { db } from './db';
@@ -27,7 +28,9 @@ export function App() {
   }, []);
 
   let screen;
+  const detail = matchPath('/l/:id', route.path);
   if (route.path === '/share') screen = <ShareScreen />;
+  else if (detail) screen = <DetailScreen id={detail.id} />;
   else if (route.path === '/inbox') screen = <InboxScreen query={route.query} />;
   else if (route.path === '/compare') screen = <Placeholder name="比較" />;
   else if (route.path === '/settings') screen = <Placeholder name="設定" />;
