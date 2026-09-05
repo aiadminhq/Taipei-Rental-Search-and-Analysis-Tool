@@ -47,6 +47,23 @@ describe('evaluate – tiers', () => {
     expect(r.tier).toBe('unknown');
     expect(r.reasons.map((x) => x.code)).toContain('missing_equipment:洗衣機');
   });
+  it('negated must-have (無洗衣機) counts as missing, not present', () => {
+    const l = mk({ title: '大安區套房', equipment: ['變頻冷氣', '冰箱', '對外窗'], rawText: '大安區套房 無洗衣機' });
+    const r = evaluate(l, DEFAULT_PROFILE, now);
+    expect(r.reasons.map((x) => x.code)).toContain('missing_equipment:洗衣機');
+    expect(r.reasons.map((x) => x.code)).not.toContain('has:洗衣機');
+    expect(r.tier).toBe('unknown');
+  });
+  it('negated deal-breaker (無壁癌) does not fail', () => {
+    const l = mk({ title: '大安區套房', rawText: '大安區套房 無壁癌 屋況佳' });
+    expect(codes(l)).not.toContain('deal_breaker:壁癌');
+    expect(evaluate(l, DEFAULT_PROFILE, now).tier).not.toBe('fail');
+  });
+  it('negated bonus keyword (無陽台) scores no bonus', () => {
+    const r = evaluate(mk({ title: '大安區套房', rawText: '大安區套房 無陽台' }), DEFAULT_PROFILE, now);
+    expect(r.reasons.map((x) => x.code)).not.toContain('bonus:陽台');
+    expect(r.reasons.some((x) => x.kind === 'bonus')).toBe(false);
+  });
   it('missing rent → unknown; missing rent but roomType 未知 and no budget → unknown', () => {
     expect(codes(mk({ rent: undefined }))).toContain('missing_rent');
   });

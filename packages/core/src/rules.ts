@@ -1,5 +1,5 @@
 import type { Listing, Profile, RuleReason, RuleResult, Tier } from './schema';
-import { CITY_OF_DISTRICT } from './dictionaries';
+import { CITY_OF_DISTRICT, NEGATION_LOOKBEHIND, escapeRegExp } from './dictionaries';
 
 export const TIER_LABEL: Record<Tier, string> = { pass: '符合', unknown: '待確認', fail: '不符' };
 
@@ -21,6 +21,11 @@ export function evaluate(l: Listing, p: Profile, now: string = new Date().toISOS
   const fail = (code: string, message: string) => reasons.push({ kind: 'fail', code, message });
   const unknown = (code: string, message: string) => reasons.push({ kind: 'unknown', code, message });
   const pass = (code: string, message: string) => reasons.push({ kind: 'pass', code, message });
+  // A plain `hay.includes(kw)` is negation-blind: 「無洗衣機」contains 洗衣機 (would count as
+  // present), 「無壁癌」contains 壁癌 (would fail as a deal-breaker) and 「無陽台」contains 陽台
+  // (would score a bonus). Reuse the same negation lookbehind the extractor uses so a keyword
+  // only counts when it is not immediately preceded by 無／沒有／沒／不含／不提供／非.
+  const mentions = (kw: string) => new RegExp(`${NEGATION_LOOKBEHIND}${escapeRegExp(kw)}`).test(hay);
 
   // 1) budget
   const budget = budgetFor(l, p);
@@ -42,7 +47,7 @@ export function evaluate(l: Listing, p: Profile, now: string = new Date().toISOS
 
   // 3) deal breakers
   for (const kw of p.dealBreakerKeywords) {
-    if (kw && hay.includes(kw)) fail(`deal_breaker:${kw}`, `含「${kw}」`);
+    if (kw && mentions(kw)) fail(`deal_breaker:${kw}`, `含「${kw}」`);
   }
 
   // 4) city
@@ -59,7 +64,7 @@ export function evaluate(l: Listing, p: Profile, now: string = new Date().toISOS
   // 6) must-have equipment
   let present = 0;
   for (const item of p.mustHave) {
-    if (l.equipment.includes(item) || hay.includes(item)) { present++; pass(`has:${item}`, item); }
+    if (l.equipment.includes(item) || mentions(item)) { present++; pass(`has:${item}`, item); }
     else unknown(`missing_equipment:${item}`, `未提及${item}`);
   }
 
@@ -69,7 +74,7 @@ export function evaluate(l: Listing, p: Profile, now: string = new Date().toISOS
   // 8) bonus
   let bonus = 0;
   for (const kw of p.bonusKeywords) {
-    if (kw && hay.includes(kw)) { bonus++; reasons.push({ kind: 'bonus', code: `bonus:${kw}`, message: kw }); }
+    if (kw && mentions(kw)) { bonus++; reasons.push({ kind: 'bonus', code: `bonus:${kw}`, message: kw }); }
   }
 
   const tier: Tier = reasons.some((r) => r.kind === 'fail') ? 'fail' : reasons.some((r) => r.kind === 'unknown') ? 'unknown' : 'pass';

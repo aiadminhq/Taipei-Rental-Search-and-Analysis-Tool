@@ -34,6 +34,11 @@ export const EQUIPMENT_CANONICAL = EQUIPMENT_ALIASES.map(([c]) => c);
 
 export const NEGATION_LOOKBEHIND = '(?<!無|沒有|沒|不含|不提供|非)';
 
+/** Escape a user-supplied keyword so it can be embedded verbatim in a RegExp source. */
+export function escapeRegExp(s: string): string {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
 export const PET_DENY = /不可養寵|禁止寵物|禁寵|不能養寵|謝絕寵物|寵物不可|不接受寵物|不可養貓|不可養狗|寵物勿/;
 export const PET_NEGOTIABLE = /寵物可議|寵物另議|寵物需洽|寵物可談|寵物再議/;
 export const PET_ALLOW = /可養寵|寵物友善|可養貓|可養狗|接受寵物|可寵|歡迎寵物|可養小型/;
