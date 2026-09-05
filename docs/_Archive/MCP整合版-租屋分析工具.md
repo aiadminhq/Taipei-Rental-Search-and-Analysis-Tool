@@ -45,7 +45,7 @@
       "args": [
         "-y",
         "@21st-dev/magic@latest",
-        "API_KEY=\"2f7832c86dfbe8e3c61e329443a5ff1b2c0c9b6e9ecfb1514d5d9a8db102ebaf\""
+        "API_KEY=\"your-magic-api-key\""
       ]
     }
   }
@@ -71,7 +71,7 @@ class MCPClient {
         args: [
           '-y',
           '@21st-dev/magic@latest',
-          'API_KEY="2f7832c86dfbe8e3c61e329443a5ff1b2c0c9b6e9ecfb1514d5d9a8db102ebaf"'
+          'API_KEY="your-magic-api-key"'
         ]
       });
       

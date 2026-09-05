@@ -18,7 +18,7 @@
   "mcpServers": {
     "@21st-dev/magic": {
       "command": "npx",
-      "args": ["-y", "@21st-dev/magic@latest", "API_KEY=\"2f7832c86dfbe8e3c61e329443a5ff1b2c0c9b6e9ecfb1514d5d9a8db102ebaf\""],
+      "args": ["-y", "@21st-dev/magic@latest", "API_KEY=\"your-magic-api-key\""],
       "env": {
         "NODE_ENV": "production",
         "PROJECT_TYPE": "rental-analysis-platform", 
@@ -29,7 +29,7 @@
       "command": "npx",
       "args": ["-y", "firecrawl-mcp"],
       "env": {
-        "FIRECRAWL_API_KEY": "fc-6f5e1e3b20174bdeb0b5250e54238476"
+        "FIRECRAWL_API_KEY": "fc-your-firecrawl-key"
       }
     }
   }

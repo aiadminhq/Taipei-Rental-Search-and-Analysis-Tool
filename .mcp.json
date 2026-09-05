@@ -11,7 +11,7 @@
       "command": "npx",
       "args": ["-y", "figma-developer-mcp", "--stdio"],
       "env": {
-        "FIGMA_API_KEY": "${FIGMA_API_KEY:-figd_2JA2G2DhP1IDGPOtWlYbC-pk_3nCv7ZXE_E8YzHB}"
+        "FIGMA_API_KEY": "${FIGMA_API_KEY}"
       }
     },
     "github": {
@@ -19,7 +19,7 @@
       "command": "npx",
       "args": ["-y", "@modelcontextprotocol/server-github"],
       "env": {
-        "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_PERSONAL_ACCESS_TOKEN:-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}"
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_PERSONAL_ACCESS_TOKEN}"
       }
     },
     "notion-api": {
@@ -27,8 +27,8 @@
       "command": "npx",
       "args": ["-y", "@notionhq/notion-mcp-server"],
       "env": {
-        "OPENAPI_MCP_HEADERS": "{\"Authorization\": \"Bearer ${NOTION_TOKEN:-secret_aBcdEfG123456789}\",\"Notion-Version\":\"2022-06-28\",\"Content-Type\":\"application/json\"}",
-        "NOTION_DATABASE_ID": "${NOTION_DATABASE_ID:-55646321-a227-45aa-8388-e15a73598931}"
+        "OPENAPI_MCP_HEADERS": "{\"Authorization\": \"Bearer ${NOTION_TOKEN}\",\"Notion-Version\":\"2022-06-28\",\"Content-Type\":\"application/json\"}",
+        "NOTION_DATABASE_ID": "${NOTION_DATABASE_ID}"
       }
     },
     "gitlab": {
@@ -45,7 +45,7 @@
       "command": "npx",
       "args": ["-y", "mcp-figma"],
       "env": {
-        "FIGMA_API_KEY": "${FIGMA_API_KEY:-figd_2JA2G2DhP1IDGPOtWlYbC-pk_3nCv7ZXE_E8YzHB}"
+        "FIGMA_API_KEY": "${FIGMA_API_KEY}"
       }
     },
     "mcp-obsidian": {
@@ -77,7 +77,7 @@
       "command": "npx",
       "args": ["-y", "firecrawl-mcp"],
       "env": {
-        "FIRECRAWL_API_KEY": "${FIRECRAWL_API_KEY:-fc-6f5e1e3b20174bdeb0b5250e54238476}"
+        "FIRECRAWL_API_KEY": "${FIRECRAWL_API_KEY}"
       }
     },
     "magic": {
@@ -85,7 +85,7 @@
       "command": "npx",
       "args": ["-y", "@21st-dev/magic@latest"],
       "env": {
-        "API_KEY": "${MAGIC_API_KEY:-2f7832c86dfbe8e3c61e329443a5ff1b2c0c9b6e9ecfb1514d5d9a8db102ebaf}",
+        "API_KEY": "${MAGIC_API_KEY}",
         "NODE_ENV": "production",
         "PROJECT_TYPE": "rental-analysis-platform",
         "DESIGN_SYSTEM": "modern-tech"
@@ -99,7 +99,7 @@
       "env": {
         "NODE_ENV": "production",
         "MCP_PORT": "${MCP_PORT:-3001}",
-        "FIRECRAWL_API_KEY": "${FIRECRAWL_API_KEY:-fc-6f5e1e3b20174bdeb0b5250e54238476}"
+        "FIRECRAWL_API_KEY": "${FIRECRAWL_API_KEY}"
       }
     }
   }

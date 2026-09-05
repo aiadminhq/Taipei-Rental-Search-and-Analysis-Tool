@@ -34,7 +34,7 @@ Firecrawl 是一個進階的網頁抓取和資料提取服務，提供：
 cp .env.example .env
 
 # 2. 編輯 .env 檔案，添加 Firecrawl API 金鑰
-FIRECRAWL_API_KEY=fc-6f5e1e3b20174bdeb0b5250e54238476
+FIRECRAWL_API_KEY=fc-your-firecrawl-key
 ```
 
 ### 2. 安裝依賴
@@ -60,7 +60,7 @@ npx -y firecrawl-mcp --version
       "command": "npx",
       "args": ["-y", "firecrawl-mcp"],
       "env": {
-        "FIRECRAWL_API_KEY": "fc-6f5e1e3b20174bdeb0b5250e54238476"
+        "FIRECRAWL_API_KEY": "fc-your-firecrawl-key"
       }
     },
     "rental-crm-mcp": {
@@ -70,7 +70,7 @@ npx -y firecrawl-mcp --version
       "env": {
         "NODE_ENV": "production",
         "MCP_PORT": "3001",
-        "FIRECRAWL_API_KEY": "fc-6f5e1e3b20174bdeb0b5250e54238476"
+        "FIRECRAWL_API_KEY": "fc-your-firecrawl-key"
       }
     }
   }
