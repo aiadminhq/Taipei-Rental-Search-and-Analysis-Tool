@@ -8,7 +8,9 @@
 
 **Tech Stack:** Node 22、TypeScript 5.9、Vite 7、Vitest 3、Preact 10、Tailwind CSS 4（`@tailwindcss/vite`）、Dexie 4、zod 4、vite-plugin-pwa 1、fake-indexeddb 6（測試）、@testing-library/preact 3、jsdom、@playwright/test 1.63、gitleaks-action v2。
 
-**Spec:** `docs/superpowers/specs/2026-09-05-pwa-rental-mvp-design.md`（v0.3）。本計畫覆蓋 spec 第 9 節 Phase 0 與 Phase 1；Phase 2（CLI、`trsat watch`、雲端 runner、PAT 同步）另立 Plan 2。
+**Spec:** `docs/superpowers/specs/2026-09-05-pwa-rental-mvp-design.md`（v0.4）。
+
+> **執行後註記（2026-09-05）**：本計畫 18 個任務已全部實作並通過逐任務審查與最終整體審查；最終審查要求的修正已合併（規則引擎關鍵字負向詞感知、re-share 保留使用者欄位、匯入還原 Profile、補抓傳輸錯誤→pending、ListingCard 缺X 取自 rule.reasons、收件匣改為明確「編輯」鈕、e2e 改以子路徑 base 執行、enrich fetch `credentials: 'omit'` 與 https 驗證）。以下任務內文為原始計畫，與現行程式碼不一致處以程式碼與 spec v0.4 為準；已知差異：Task 10 `upsertListing` 需保留 status/statusHistory/notes/pinned/enrichment；Task 11 低信心門檻為「三個必要欄位全缺才停用」；Task 13 `ListingCard` 缺X 來源為 `rule.reasons`；Task 14 網路錯誤→`pending`；Task 18 `playwright.config.ts` baseURL 含 `VITE_BASE_PATH`。本計畫覆蓋 spec 第 9 節 Phase 0 與 Phase 1；Phase 2（CLI、`trsat watch`、雲端 runner、PAT 同步）另立 Plan 2。
 
 ## Global Constraints
 

@@ -1,8 +1,8 @@
 # TRSAT PWA 租屋收件匣 MVP：設計規格（PRD v2 精簡版 + UIUX + 擷取架構）
 
 **日期**：2026-09-05
-**狀態**：v0.3，使用者已於 2026-09-05 審閱通過，進入實作計畫
-**變更紀錄**：v0.2（2026-09-05）依使用者回饋改為 A+B 混合方案，並以「個人 Profile」定義排程抓取範圍與驗收標準；v0.3（2026-09-05）D7 決議排程抓取預設在 GitHub Actions cron 執行，輸出至私有資料 repo（新增 4.3 節）
+**狀態**：v0.4，Phase 0–1 實作完成後依最終審查回饋補充語意（見變更紀錄）
+**變更紀錄**：v0.2（2026-09-05）依使用者回饋改為 A+B 混合方案，並以「個人 Profile」定義排程抓取範圍與驗收標準；v0.3（2026-09-05）D7 決議排程抓取預設在 GitHub Actions cron 執行，輸出至私有資料 repo（新增 4.3 節）；v0.4（2026-09-05）依最終程式碼審查補充：同 id 再次寫入的欄位保留規則（6.1）、匯入還原 Profile（7.3 S6、10）、補抓 endpoint 傳輸錯誤與 HTTP 錯誤的區分（10）、關鍵字比對需負向詞感知（6.3）、低信心加入門檻定義（7.3 S1）
 **分支**：`claude/pwa-rental-crawler-mvp-j6dyt4`
 **取代**：`docs/00_Project_Blueprints/PRD_Master.md` 中所有企業級需求（微服務、PostgreSQL + MongoDB、1000 併發、三年歷史資料、JWT/RBAC）。該文件保留為歷史參考，不再作為開發依據。
 **依據**：`docs/superpowers/research/2026-09-05-rental-source-ingestion-research.md`（資料來源可行性調查）、`docs/_Archive/Christian Wu's個人租屋需求.MD`（使用者實際需求）、`docs/00_Project_Blueprints/資料庫欄位.md`（欄位優先順序）
@@ -247,6 +247,8 @@ interface Listing {
 
 其他表：`inbox`（尚未確認加入的 share 項目，含原始 `title/text/url`）、`profile`（單筆）、`syncLog`（匯入匯出與 endpoint 呼叫紀錄）。
 
+**同 id 再次寫入（re-share）的保留規則**：`id` 由來源與來源 ID 決定，因此同一連結再次分享會命中既有紀錄。寫入時必須保留使用者擁有的欄位 `status`、`statusHistory`、`notes`、`pinned`、`enrichment`，且傳入值為 undefined 的欄位不得覆蓋既有值（例如已補抓的 `photos`、`address`）；只有傳入有值的解析欄位才更新。
+
 ### 6.2 `Profile`（使用者條件，Settings 可編輯）
 ```ts
 interface Profile {
@@ -272,10 +274,12 @@ interface Profile {
 | 謝絕關鍵字 | rawText / title 命中 | `fail: 含「壁癌」` |
 | 城市 | district 對應到非允許城市 | `fail: 地點不在範圍` |
 | 捷運距離 | `mrtWalkMin > max` | `fail: 捷運步行 20 分` |
-| 必備設備 | equipment 缺少任一 mustHave 且 rawText 也未提及 | `unknown: 未提及洗衣機`（不判死） |
+| 必備設備 | equipment 缺少任一 mustHave 且 rawText 也未以「非負向」方式提及 | `unknown: 未提及洗衣機`（不判死） |
 | 資料不足 | 租金或房型缺失 | `unknown: 缺租金` |
 
 分級：任一 `fail` → **不符**；無 `fail` 且有 `unknown` → **待確認**；皆無 → **符合**。
+
+**關鍵字比對規則**：謝絕關鍵字、加分關鍵字與必備設備的文字比對一律使用與 `extractFields` 相同的負向詞前綴排除（無／沒有／沒／不含／不提供／非），故「無洗衣機」不算有洗衣機、「無壁癌」不觸發謝絕、「無陽台」不加分。
 軟評分（0–100，僅排序用）：預算餘裕 30、必備設備覆蓋 30、捷運距離 20、加分關鍵字 10、資料完整度 10。
 
 ### 6.4 去重（`core/dedupe`）
@@ -320,6 +324,7 @@ Inbox 有未處理數量 badge。首次開啟顯示 3 步 onboarding：安裝到
 - 立即呼叫 `core.parse` 並顯示**預覽卡**：來源 icon、解析到的租金／區／房型、分級色帶、缺少欄位清單。
 - 主要動作：`加入房源`（進 listings，status = shortlist）。次要：`先放收件匣`、`略過`。
 - 若 endpoint 已設定且在線，背景送出 enrich；否則 `enrichment = 'pending'`。
+- 「加入房源」在三個必要欄位（租金／區／房型）**全部**缺失時停用；使用者補任一欄位即可加入。此規則取代早期「confidence < 0.5 且有缺欄位即停用」的寫法，因單一欄位的信心權重不足以跨過 0.5。
 - 無網路時全部動作仍可完成（純本地）。
 
 **S2 收件匣（`/inbox`）**
@@ -347,7 +352,7 @@ Inbox 有未處理數量 badge。首次開啟顯示 3 步 onboarding：安裝到
 **S6 設定（`/settings`）**
 - 個人條件表單（對應 Profile），儲存後背景重算所有 listing 的 `rule`。
 - 補抓 endpoint：URL 輸入 + 測試連線；說明需 HTTPS（Tailscale Funnel / Cloudflare Tunnel）。
-- 資料：匯出 JSON、匯入 JSON（合併，以 `updatedAt` 新者優先）、清除所有資料（二次確認）。
+- 資料：匯出 JSON、匯入 JSON（合併，以 `updatedAt` 新者優先；**同時還原檔內 Profile** 並依該 Profile 重算所有分級）、清除所有資料（二次確認）。
 - 關於：版本、SW 更新提示。
 
 ### 7.4 PWA 技術需求
@@ -393,13 +398,14 @@ Phase 0–2 為本規格的實作計畫範圍。
 |---|---|
 | 分享進來但無法辨識來源 | 建立 `source: 'other'` listing，只保留 URL / 文字，分級「待確認」，提示手動補欄位 |
 | 文字解析信心 < 0.5 | 預覽卡欄位以虛線框顯示，要求使用者確認後才可「加入」 |
-| endpoint 不可達 | 靜默標記 `enrichment: 'pending'`，Settings 顯示最後成功時間；不彈錯誤 |
+| endpoint 不可達（網路／傳輸層錯誤） | 靜默標記 `enrichment: 'pending'`，Settings 顯示最後成功時間；不彈錯誤 |
+| endpoint 回應非 2xx（HTTP 層錯誤，非 401 SESSION_EXPIRED） | 標記 `enrichment: 'failed'`，toast「補抓失敗」 |
 | 雲端同步失敗（PAT 失效 401、repo 不存在 404、rate limit 403） | Settings 顯示錯誤原因與上次成功時間；PAT 失效時提示重新產生；不清除既有資料 |
 | 雲端 runner 連續 suspect 比例過高 | workflow 失敗並停用 cron；README 指引改用本機備援 |
 | endpoint 回傳 login 失效（HTTP 401 + `code: SESSION_EXPIRED`） | 詳情頁顯示「電腦端需重新登入 FB」提示 |
 | 591 假資料偵測 | listing 標 `suspect`，卡片顯示警示 icon，CLI log 記錄 |
 | IndexedDB 寫入失敗／配額不足 | toast + 引導匯出備份 |
-| 匯入 JSON schema 不符 | zod 錯誤逐筆列出，僅匯入合法筆 |
+| 匯入 JSON schema 不符 | zod 錯誤逐筆列出，僅匯入合法筆；不還原 Profile |
 | SW 更新 | prompt toast，不自動 reload 以免打斷輸入 |
 
 ---
