@@ -1,0 +1,76 @@
+{
+  "_note": "虛構樣本資料，供 Claude Design / Figma 原型使用。電話一律 0912-000-xxx，地址為虛構路名。",
+  "profile": {
+    "budget": { "套房": 15000, "雅房": 10000 },
+    "budgetTolerance": 1000,
+    "cities": ["台北市", "新北市"],
+    "mrtWalkMaxMin": 15,
+    "mustHave": ["變頻冷氣", "冰箱", "對外窗", "洗衣機"],
+    "pets": { "required": true, "note": "2 隻貓" },
+    "dealBreakerKeywords": ["壁癌", "無對外窗", "壁紙", "隔音差", "不可養寵物", "禁寵", "限女", "限男", "頂加"],
+    "bonusKeywords": ["露台", "陽台", "可自繳", "電梯", "新裝潢", "乾濕分離"]
+  },
+  "listings": [
+    {
+      "id": "threads:DNG2tXiBjzN", "source": "threads", "title": "#出租 大安區獨立套房 近科技大樓站",
+      "rent": 14500, "depositMonths": 2, "managementFee": 0, "roomType": "套房", "layout": "1房1衛", "areaPing": 8, "floor": "5F/7F",
+      "city": "台北市", "district": "大安區", "address": "復興南路二段（虛構）", "mrtNearest": "科技大樓站", "mrtWalkMin": 6,
+      "equipment": ["變頻冷氣", "冷氣", "冰箱", "洗衣機", "對外窗", "電梯"], "petPolicy": "allowed", "availableFrom": "2026-10-01",
+      "photos": 3, "contactRaw": "0912-000-001", "status": "contacted", "enrichment": "done",
+      "rule": { "tier": "pass", "softScore": 78, "reasons": [
+        { "kind": "pass", "message": "租金 14,500 在預算內" }, { "kind": "pass", "message": "可養寵物" }, { "kind": "pass", "message": "台北市大安區" },
+        { "kind": "pass", "message": "捷運步行 6 分" }, { "kind": "pass", "message": "變頻冷氣" }, { "kind": "pass", "message": "冰箱" },
+        { "kind": "pass", "message": "對外窗" }, { "kind": "pass", "message": "洗衣機" }, { "kind": "bonus", "message": "電梯" } ] },
+      "notes": "10/3 週五晚上約看，問頂樓是否漏水", "dedupeGroupId": "threads:DNG2tXiBjzN", "sameGroupCount": 2
+    },
+    {
+      "id": "threads:ABC123xyz", "source": "threads", "title": "大安區明亮套房 3 分到捷運",
+      "rent": 12000, "roomType": "套房", "areaPing": 8, "city": "台北市", "district": "大安區", "mrtNearest": "古亭站", "mrtWalkMin": 3,
+      "equipment": ["變頻冷氣", "冷氣", "冰箱", "洗衣機", "對外窗"], "petPolicy": "allowed", "photos": 2, "status": "shortlist", "enrichment": "none",
+      "rule": { "tier": "pass", "softScore": 85, "reasons": [ { "kind": "pass", "message": "租金 12,000 在預算內" }, { "kind": "pass", "message": "可養寵物" }, { "kind": "pass", "message": "捷運步行 3 分" } ] }
+    },
+    {
+      "id": "591:18234567", "source": "591", "title": "文山區採光套房 近萬芳醫院站",
+      "rent": 14900, "depositMonths": 2, "managementFee": 1000, "roomType": "套房", "areaPing": 9, "floor": "3F/5F",
+      "city": "台北市", "district": "文山區", "mrtNearest": "萬芳醫院站", "mrtWalkMin": 14, "equipment": ["冷氣", "冰箱", "電梯", "洗衣機", "對外窗", "變頻冷氣"],
+      "petPolicy": "allowed", "photos": 5, "contactRaw": "0912-000-002", "status": "viewing", "enrichment": "done",
+      "rule": { "tier": "pass", "softScore": 61, "reasons": [ { "kind": "pass", "message": "租金 14,900 在預算內" }, { "kind": "pass", "message": "捷運步行 14 分" }, { "kind": "bonus", "message": "電梯" } ] }
+    },
+    {
+      "id": "591:18299001", "source": "591", "title": "信義區套房",
+      "rent": 13000, "roomType": "套房", "city": "台北市", "district": "信義區", "equipment": ["冷氣"], "petPolicy": "unknown",
+      "photos": 0, "status": "shortlist", "enrichment": "pending",
+      "rule": { "tier": "unknown", "softScore": 42, "reasons": [
+        { "kind": "unknown", "message": "未提及洗衣機" }, { "kind": "unknown", "message": "未提及對外窗" }, { "kind": "unknown", "message": "未提及寵物政策" }, { "kind": "unknown", "message": "未提及捷運步行時間" } ] }
+    },
+    {
+      "id": "fb_group:taipeirent:987654321", "source": "fb_group", "title": "板橋分租套房 含網路",
+      "rent": 9500, "roomType": "分租", "city": "新北市", "district": "板橋區", "equipment": ["冷氣", "網路"], "petPolicy": "unknown",
+      "photos": 1, "status": "shortlist", "enrichment": "none",
+      "rule": { "tier": "unknown", "softScore": 38, "reasons": [ { "kind": "unknown", "message": "未提及寵物政策" }, { "kind": "unknown", "message": "未提及變頻冷氣" }, { "kind": "unknown", "message": "缺捷運資訊" } ] }
+    },
+    {
+      "id": "ptt:M.1725000000.A.1B2", "source": "ptt", "title": "[女/新北/中和] 雅房 近景安站",
+      "rent": 8000, "depositMonths": 2, "roomType": "雅房", "city": "新北市", "district": "中和區", "mrtNearest": "景安站", "mrtWalkMin": 10,
+      "equipment": ["冷氣", "冰箱", "洗衣機"], "petPolicy": "not_allowed", "photos": 0, "status": "rejected", "enrichment": "none",
+      "rule": { "tier": "fail", "softScore": 20, "reasons": [ { "kind": "fail", "message": "不可養寵物" }, { "kind": "fail", "message": "含「限女」" }, { "kind": "pass", "message": "租金 8,000 在預算內" } ] }
+    },
+    {
+      "id": "591:18300777", "source": "591", "title": "大安區兩房整層 電梯大樓",
+      "rent": 18000, "roomType": "套房", "areaPing": 12, "city": "台北市", "district": "大安區", "mrtNearest": "信義安和站", "mrtWalkMin": 5,
+      "equipment": ["變頻冷氣", "冷氣", "冰箱", "洗衣機", "對外窗", "電梯"], "petPolicy": "allowed", "photos": 6, "status": "shortlist", "enrichment": "done",
+      "rule": { "tier": "fail", "softScore": 55, "reasons": [ { "kind": "fail", "message": "租金 18,000 超出 套房 預算 15,000" } ] }
+    }
+  ],
+  "inbox": [
+    { "id": "inb-1", "source": "threads", "title": "大安區套房 NT$14,500", "tier": "pass", "receivedAt": "2026-09-05T20:10:00+08:00" },
+    { "id": "inb-2", "source": "591", "title": "信義區套房 NT$16,000", "tier": "unknown", "receivedAt": "2026-09-05T19:42:00+08:00", "reason": "未提及寵物" },
+    { "id": "inb-3", "source": "ptt", "title": "中和雅房 NT$8,000", "tier": "fail", "receivedAt": "2026-09-05T18:05:00+08:00", "reason": "限女生" }
+  ],
+  "samplePosts": {
+    "threads_full": "#出租 大安區獨立套房\n租金 14,500/月 含管理費，押二付一\n約 8 坪，1房1衛，5F/7F 有電梯\n變頻冷氣、冰箱、洗衣機、對外窗採光好\n捷運科技大樓站 步行 6 分\n可養貓 限一隻\n洽 0912-000-001",
+    "fb_no_pets": "【中和 雅房出租】\n月租 8000 元 押金兩個月\n近捷運景安站走路約10分\n提供冷氣 冰箱共用 洗衣機共用\n不可養寵物 限女生",
+    "ptt_whole": "[無/台北/中山] 整層住家 2房1廳1衛 近行天宮\n租金：28000\n坪數：18坪\n樓層：3F/5F\n設備：變頻冷氣x2、冰箱、洗衣機、電視\n聯絡：請站內信",
+    "url_only_591": "https://rent.591.com.tw/18234567"
+  }
+}

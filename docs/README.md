@@ -35,6 +35,7 @@
 
 ### 設計規範
 - **[Claude Design 原型提示詞包（2026-09-05）](./03_UX_UI_Design/Claude_Design_Prompts_PWA_Prototype.md)**
+- **[原型參考資料包：tokens、元件清單、文案表、樣本資料（2026-09-05）](./03_UX_UI_Design/Prototype_Reference_Kit.md)**
 - **[UI/UX 設計指南](./03_UX_UI_Design/UIUX_Master_Guide.md)**
 
 ### 報告與總結
