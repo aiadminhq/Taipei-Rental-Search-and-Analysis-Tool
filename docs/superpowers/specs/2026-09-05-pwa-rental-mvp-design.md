@@ -1,8 +1,8 @@
 # TRSAT PWA 租屋收件匣 MVP：設計規格（PRD v2 精簡版 + UIUX + 擷取架構）
 
 **日期**：2026-09-05
-**狀態**：Draft v0.2，待使用者審閱
-**變更紀錄**：v0.2（2026-09-05）依使用者回饋改為 A+B 混合方案，並以「個人 Profile」定義排程抓取範圍與驗收標準
+**狀態**：v0.3，使用者已於 2026-09-05 審閱通過，進入實作計畫
+**變更紀錄**：v0.2（2026-09-05）依使用者回饋改為 A+B 混合方案，並以「個人 Profile」定義排程抓取範圍與驗收標準；v0.3（2026-09-05）D7 決議排程抓取預設在 GitHub Actions cron 執行，輸出至私有資料 repo（新增 4.3 節）
 **分支**：`claude/pwa-rental-crawler-mvp-j6dyt4`
 **取代**：`docs/00_Project_Blueprints/PRD_Master.md` 中所有企業級需求（微服務、PostgreSQL + MongoDB、1000 併發、三年歷史資料、JWT/RBAC）。該文件保留為歷史參考，不再作為開發依據。
 **依據**：`docs/superpowers/research/2026-09-05-rental-source-ingestion-research.md`（資料來源可行性調查）、`docs/_Archive/Christian Wu's個人租屋需求.MD`（使用者實際需求）、`docs/00_Project_Blueprints/資料庫欄位.md`（欄位優先順序）
@@ -11,7 +11,7 @@
 
 ## 0. 一頁摘要
 
-本專案重新定位為**單人使用、私有部署、local-first 的租屋收件匣（Rental Inbox）PWA**，搭配一支在使用者自己電腦上執行的 `trsat` CLI。CLI 有兩種工作模式：(1) **排程抓取**（`trsat watch`）：只針對無需登入的 591 與 PTT，且搜尋範圍完全由使用者的個人 Profile 決定；(2) **單筆補抓**（`trsat fetch`）：處理由手機分享進來、需要瀏覽器或登入 session 的 Threads / Facebook 連結。
+本專案重新定位為**單人使用、私有部署、local-first 的租屋收件匣（Rental Inbox）PWA**，搭配一支在使用者自己電腦上執行的 `trsat` CLI。CLI 有兩種工作模式：(1) **排程抓取**（`trsat watch`）：只針對無需登入的 591 與 PTT，搜尋範圍完全由使用者的個人 Profile 決定，預設由 GitHub Actions cron 在私有資料 repo 中執行；(2) **單筆補抓**（`trsat fetch`）：處理由手機分享進來、需要瀏覽器或登入 session 的 Threads / Facebook 連結。
 
 兩條進料路徑匯入同一個收件匣：**（主動）排程抓取依 Profile 自動找出符合條件的 591 / PTT 房源 → 進入收件匣；（被動）在任何 App 看到房源 → 分享／貼上 → PWA 立即以本地規則解析並分級**。之後皆進入房源清單追蹤看房狀態，需要完整資料時由 CLI 補抓。
 
@@ -88,12 +88,12 @@ MVP 交付範圍為 Phase 0 到 Phase 2（見第 9 節），預估 5 到 7 個�
 | 方案 | 概要 | 優勢 | 風險／成本 | 決策 |
 |---|---|---|---|---|
 | **A. Local-first PWA + 本機 CLI（採用）** | PWA 靜態部署於 GitHub Pages，資料存 IndexedDB；需瀏覽器或登入的擷取由使用者電腦上的 `trsat` CLI 完成，結果以 JSON 匯入或經使用者自架的 fetch endpoint 回傳 | session 不離開裝置、零主機費、離線可用、最快可操作、符合個資法私有前提 | 手機與電腦兩個執行環境；補抓需電腦開機 | **採用（基礎）** |
-| B. 雲端排程爬蟲服務 | VPS 排程 Playwright + 持久 session，PWA 讀雲端 API | 全自動、純手機操作 | 社群帳號 cookie 上雲，checkpoint / 封號風險最高；資料中心 IP 被 Meta 與 591 標記；主機與維運成本；公開端點需自建認證 | **部分採用（B-lite）**：只保留「排程自動抓取」這個特性，且限制為 (a) 無需登入的 591 與 PTT、(b) 搜尋範圍由 Profile 決定、(c) 預設在使用者自己的電腦排程執行；雲端執行列為可選（見 D7）。FB / Threads 的排程搜尋仍不採用 |
+| B. 雲端排程爬蟲服務 | VPS 排程 Playwright + 持久 session，PWA 讀雲端 API | 全自動、純手機操作 | 社群帳號 cookie 上雲，checkpoint / 封號風險最高；資料中心 IP 被 Meta 與 591 標記；主機與維運成本；公開端點需自建認證 | **部分採用（B-lite）**：只保留「排程自動抓取」這個特性，且限制為 (a) 無需登入的 591 與 PTT、(b) 搜尋範圍由 Profile 決定、(c) 預設由 GitHub Actions cron 執行，結果只寫入私有資料 repo（D7 已決議）；本機 launchd 為備援。FB / Threads 的排程搜尋仍不採用 |
 | C. 延續 Notion + MCP 架構 | Notion 為資料庫，三個 Node 服務並行 | 重用既有程式碼 | 三個常駐 process、Notion API 限速、與離線 PWA 目標衝突、現有 PWA 外殼本身不可用 | 不採用；程式碼保留為 legacy |
 
 **採用 A+B（B-lite）的理由**：A 在第一天就能交付可安裝、可離線、可分享進來的 PWA，登入相關風險被隔離在使用者可控的本機環境。B 的「自動化」價值在 591 與 PTT 上可以零風險取得（兩者皆不需登入、資料結構化、規則明確），因此以 `trsat watch` 排程納入；B 的高風險部分（社群帳號 cookie 上雲、全市大量抓取）則排除。把抓取範圍鎖定在 Profile 有三個效果：抓取量小到不會觸發 591 假資料機制、資料庫內容天然就是「候選名單」、以及 MVP 有一個可客觀驗收的標準。
 
-**資料存放前提**：本 repo 為 public。排程抓取結果含房東電話等個資，**不得寫入本 repo 或任何公開位置**；預設寫入使用者電腦 `~/.trsat/data/trsat.sqlite`，再以 JSON 或 `trsat serve` 交給 PWA。若選擇雲端排程（D7 替代方案），輸出必須落在私有 repo 或私有儲存。
+**資料存放前提**：本 repo 為 public。排程抓取結果含房東電話等個資，**不得寫入本 repo 或任何公開位置**。雲端排程一律在另一個**私有** repo（下稱 `trsat-data`）中執行並提交結果；本機執行則寫入 `~/.trsat/data/trsat.sqlite`。Actions log 不得輸出任何 listing 內容，只輸出筆數與狀態。
 
 ---
 
@@ -160,6 +160,33 @@ docs/superpowers/   specs / research / plans
 | `cli/serve` | 本機 HTTP server，只綁 127.0.0.1 或 Tailscale 介面 | `POST /api/fetch`, `GET /api/listings?since=` | fastify 或 node:http |
 
 **邊界檢查**：`core` 不得 import DOM、Node、Playwright；PWA 不得知道 cookie 或 profile 目錄存在；CLI 不得寫入 PWA 儲存空間（只透過 JSON 或 HTTP 交換）。
+
+### 4.3 雲端排程 runner（GitHub Actions cron，D7 決議）
+
+```
+私有 repo：<owner>/trsat-data
+├── .github/workflows/watch.yml   cron: 每 60 分鐘（Actions cron 最小 5 分，實際延遲常達數分鐘至數十分鐘）
+│     steps: checkout 本 repo 指定 tag → npm ci → node packages/cli watch --once --profile profile.json --out data/
+│            → git commit data/ （若有變更）→ push
+├── profile.json                  個人 Profile（與 PWA Settings 匯出格式相同）
+└── data/
+    ├── listings.json             PWA 匯入格式；全量快照（≤ 數百筆）
+    ├── runs.jsonl                每輪筆數、耗時、suspect 數、錯誤碼；不含 listing 內容
+    └── raw/<source>/<id>.json    原始回應，供重新解析（可選，預設關閉以控制 repo 體積）
+```
+
+**PWA 端串接**：Settings 新增「雲端資料來源」：輸入 `owner/repo`、`branch`、fine-grained PAT（權限只給該 repo 的 `Contents: read`）。PWA 以 `GET https://api.github.com/repos/{owner}/{repo}/contents/data/listings.json`（`Accept: application/vnd.github.raw+json`）取得快照，依 `updatedAt` 合併進 IndexedDB；PAT 只存於裝置 IndexedDB，不進 URL、不進 log。手動「立即同步」與開啟 App 時自動同步各一。
+
+**風險與對策**
+| 風險 | 對策 |
+|---|---|
+| Actions runner 為資料中心 IP，591 可能回假資料或 Cloudflare 挑戰 | 每輪極低量（Profile 範圍內、≤ 90 筆／組合）、2–4 秒隨機延遲、同 ID 雙抓比對標 `suspect`；連續兩輪 suspect 比例 > 30% 時 workflow 標 failure 並停用 cron，改用本機 `trsat watch --install-launchd` 備援 |
+| 私有 repo 體積成長 | `listings.json` 為全量快照覆寫；`raw/` 預設關閉；`runs.jsonl` 每月輪替 |
+| PAT 外洩 | fine-grained、單 repo、只讀、90 天到期；Settings 提供「撤銷說明」連結 |
+| 個資 | `trsat-data` 必須 private；workflow 首步驟檢查 `github.event.repository.private == true`，否則直接失敗 |
+| PWA 在 GitHub Pages 呼叫 api.github.com | GitHub API 允許 CORS，無需 proxy |
+
+PTT 不受資料中心 IP 影響。Threads / FB 不在雲端 runner 執行。
 
 ---
 
@@ -353,8 +380,8 @@ Inbox 有未處理數量 badge。首次開啟顯示 3 步 onboarding：安裝到
 |---|---|---|---|
 | **0. 清理與骨架** | 金鑰清除 + gitleaks；npm workspaces；`packages/core` schema + parser 骨架 + vitest；`apps/pwa` Vite + Preact + Tailwind + Dexie + vite-plugin-pwa 空殼可安裝；CI：test + build + Pages deploy | 可安裝的空 PWA、綠色 CI | 0.5–1 天 |
 | **1. PWA 可操作 MVP** | share_target + 貼上；591/Threads/FB/PTT URL 與文字 parser（含 30 筆 fixture）；rules 引擎 + Profile 設定；Inbox / Listings / Detail / Compare；狀態流程；匯出匯入 | 手機可日常使用，無後端 | 2–3 天 |
-| **2. CLI 補抓 + Profile 排程抓取** | `trsat` 指令集；`core/profileQuery`；591 bff search（Profile 驅動）+ 詳情；PTT 批次；`trsat watch --once` 與 `--install-launchd`（macOS）/ cron 範本；Threads 匿名單篇；FB persistent profile 單篇；sessions 管理；SQLite；`serve` + PWA endpoint 串接；pHash 去重；以真實 Profile 抓取結果建立 30 筆驗收 fixture | 每日自動產生符合個人條件的候選名單；完整資料補完 | 3–4 天 |
-| 3. 增強（本規格外） | 雲端排程 runner（GitHub Actions cron，需私有 repo 存放輸出）、LLM 抽取 fallback、AI 摘要與軟評分、Apify webhook、Telegram 推播、樂屋／信義／好房、iOS 捷徑檔、legacy `src/` 移除 | — | 另立 spec |
+| **2. CLI 補抓 + Profile 排程抓取** | `trsat` 指令集；`core/profileQuery`；591 bff search（Profile 驅動）+ 詳情；PTT 批次；`trsat watch --once`；`trsat-data` 私有 repo 範本（workflow、profile.json、private 檢查）；PWA Settings 雲端資料來源 + PAT 同步；`--install-launchd`（macOS）備援；Threads 匿名單篇；FB persistent profile 單篇；sessions 管理；SQLite；`serve` + PWA endpoint 串接；pHash 去重；以真實 Profile 抓取結果建立 30 筆驗收 fixture | 每小時自動產生符合個人條件的候選名單並同步至手機；完整資料補完 | 4–5 天 |
+| 3. 增強（本規格外） | LLM 抽取 fallback、AI 摘要與軟評分、Apify webhook、Telegram 推播、樂屋／信義／好房、iOS 捷徑檔、legacy `src/` 移除 | — | 另立 spec |
 
 Phase 0–2 為本規格的實作計畫範圍。
 
@@ -367,6 +394,8 @@ Phase 0–2 為本規格的實作計畫範圍。
 | 分享進來但無法辨識來源 | 建立 `source: 'other'` listing，只保留 URL / 文字，分級「待確認」，提示手動補欄位 |
 | 文字解析信心 < 0.5 | 預覽卡欄位以虛線框顯示，要求使用者確認後才可「加入」 |
 | endpoint 不可達 | 靜默標記 `enrichment: 'pending'`，Settings 顯示最後成功時間；不彈錯誤 |
+| 雲端同步失敗（PAT 失效 401、repo 不存在 404、rate limit 403） | Settings 顯示錯誤原因與上次成功時間；PAT 失效時提示重新產生；不清除既有資料 |
+| 雲端 runner 連續 suspect 比例過高 | workflow 失敗並停用 cron；README 指引改用本機備援 |
 | endpoint 回傳 login 失效（HTTP 401 + `code: SESSION_EXPIRED`） | 詳情頁顯示「電腦端需重新登入 FB」提示 |
 | 591 假資料偵測 | listing 標 `suspect`，卡片顯示警示 icon，CLI log 記錄 |
 | IndexedDB 寫入失敗／配額不足 | toast + 引導匯出備份 |
@@ -387,13 +416,13 @@ Phase 0–2 為本規格的實作計畫範圍。
 
 ## 12. 待使用者確認的決策
 
-以下已採預設值並可直接開發；若使用者偏好不同，回覆後調整。使用者已於 2026-09-05 確認：採 A+B 混合、抓取範圍以個人需求為準並作為測試標準（反映於第 0、2.3、3、6.5、9、11 節）。
+以下已採預設值並可直接開發；若使用者偏好不同，回覆後調整。使用者已於 2026-09-05 確認：採 A+B 混合、抓取範圍以個人需求為準並作為測試標準（第 0、2.3、3、6.5、9、11 節）；D7 選 GitHub Actions cron（第 4.3 節）；D1、D3–D6 採預設值；spec 整體通過。
 
 | # | 決策 | 預設 | 替代 |
 |---|---|---|---|
 | D1 | 前端框架 | Preact + TypeScript（與 core 共用型別、體積小） | 沿用 Alpine.js（現有熟悉度，但無型別共用） |
 | D2 | 手機 ↔ 電腦資料交換 | 手動 JSON 匯出匯入為必要；`trsat serve` + Tailscale Funnel 為可選 | 直接用 Telegram bot 當收件匣（需 bot token 與常駐） |
-| D7 | 排程抓取執行位置 | 使用者電腦（macOS launchd / cron），輸出至本機 SQLite | GitHub Actions cron（免費、免開機），但輸出含個資，需另建私有 repo 或私有儲存；列 Phase 3 |
+| D7 | 排程抓取執行位置 | **已決議：GitHub Actions cron**，於私有 repo `trsat-data` 執行並提交結果（4.3 節）；本機 launchd 為備援 | 使用者電腦 launchd / cron |
 | D3 | FB 擷取帳號 | 建議分身帳號，README 明示風險 | 不做 FB CLI 擷取，只保留文字貼上 |
 | D4 | 歷史金鑰 | 撤銷 + 從工作樹移除，不重寫 history | 同時執行 `git filter-repo` |
 | D5 | legacy `src/` | Phase 0–2 不動，README 標示；Phase 3 移除 | Phase 0 直接搬到 `legacy/` |
