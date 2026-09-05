@@ -32,6 +32,10 @@ pids
 coverage/
 .nyc_output
 
+# Playwright
+playwright-report/
+test-results/
+
 # 編譯結果
 dist/
 build/
