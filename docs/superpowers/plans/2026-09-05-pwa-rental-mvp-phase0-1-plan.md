@@ -3896,3 +3896,23 @@ git commit -m "test(pwa): playwright smoke (share, offline, export/import); ci e
 ## Plan 2 預告（不在本計畫）
 
 `packages/cli`（`trsat fetch / search 591 / ptt / watch / login / sessions / serve`）、`core/profileQuery`、`trsat-data` 私有 repo 與 GitHub Actions cron、PWA Settings 的 GitHub PAT 同步、pHash 計算。待本計畫 Task 18 完成並取得第一批真實 591 回應 fixture 後撰寫。
+
+
+---
+
+## 執行後待辦（最終審查列為「可延後」的項目）
+
+以下為逐任務審查與最終整體審查中記錄、經判定不阻擋合併的小項，供 Phase 2 或清理任務處理：
+
+1. `scripts/check-secrets.sh` 僅比對已知前綴；泛用偵測依賴 gitleaks（CI 已啟用）。
+2. `docs/02_Technical_Guides`、`docs/04_Reports` 仍引用已移除的 legacy npm scripts（`logs:monitor`、`test:quick`、`test:firecrawl`、`example:firecrawl`）。
+3. `packages/core/src/extract.ts`：萬／格局／押金／管理費 regex 仍用 `\s*`，可能跨行誤配；建議共用 `[ \t]*`。
+4. `extractRent` 的 4–5 位數字 fallback 取第一個合理數字，地址中的數字可能誤判。
+5. `rules.ts`：`district` 不在字典且無 `city` 時會靜默通過 `in_cities`（目前解析器產生不出此狀態，僅手動輸入可及）。
+6. `db.ts`：`recomputeRules` 在 `saveProfile` 時重跑 O(n²) 去重；`setStatus` 的 get→put 未包在 transaction 內。
+7. `Detail.tsx`：檢視模式隱藏「租金」資訊格（租金仍在標題大字），建議恢復並改用範圍限定的測試查詢。
+8. `Settings.tsx`：「關於」區塊無標題；checkbox 本身未加 `.tap`（label 提供點擊區）；`downloadJson` 在 jsdom 無法測試。
+9. `index.html` 仍向 `fonts.googleapis.com` 取字型；local-first 定位下建議自行託管子集或改用系統字體。
+10. `Share.tsx` 的 QuotaExceededError 提示只在分享加入路徑；收件匣加入與匯入路徑可共用同一 helper。
+11. e2e `resetAndOnboard` 的 IndexedDB 刪除在 `onblocked` 時直接 resolve（由後續 reload 補償）。
+12. 產品端待辦：手機實機驗收（Android 分享選單、iPhone 貼上）、Lighthouse PWA 安裝檢查於 Pages 子路徑、30 筆真實貼文的分級一致率驗收（spec 2.3）。
