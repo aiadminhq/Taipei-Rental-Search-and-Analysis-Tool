@@ -74,8 +74,8 @@
      3. 添加以下 secrets：
 
      ```
-    NOTION_API_KEY=Bearer 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
-    NOTION_DATABASE_ID=227b86cbe9ad806b9096f90af9094dba
+    NOTION_API_KEY=Bearer ${NOTION_TOKEN}
+    NOTION_DATABASE_ID=${NOTION_DATABASE_ID}
      DOCKER_USERNAME: your_docker_hub_username (可選)
      DOCKER_PASSWORD: your_docker_hub_token (可選)
      ```

@@ -1,5 +1,14 @@
 # 🏠 Taipei-Rental-Search-and-Analysis-Tool (TRSAT)
 
+> **2026-09 起新架構**：本 repo 已改為 npm workspaces monorepo。
+> - `apps/pwa`：租屋收件匣 PWA（Vite + Preact，部署至 GitHub Pages）
+> - `packages/core`：共用解析／規則／去重函式庫
+> - `src/` + `legacy/`：舊 591→Notion/MCP 系統，僅保留參考，見 `legacy/README.md`
+> 設計規格：`docs/superpowers/specs/2026-09-05-pwa-rental-mvp-design.md`
+> 開發：`npm install && npm run dev`；測試：`npm test`
+> 手機安裝：開啟 GitHub Pages 網址 → 加入主畫面。Android 之後可從任何 App 的「分享」選單送房源進來；iPhone 請複製後在收件匣按「貼上」。
+> 補抓與排程抓取（591 / PTT / Threads / FB）屬 Phase 2 CLI，見 spec 第 4.3、8 節與 Plan 2。
+
 ## 📋 專案概述 | Project Overview
 
 本專案 `Taipei-Rental-Search-and-Analysis-Tool` (TRSAT) 旨在建立一個台北租屋市場的搜尋與分析工具。專案涵蓋數據爬取、數據分析、AI 模型建構、網頁應用開發等關鍵領域。所有文件將依功能分類整理，以確保專案的一致性、可維護性和易於搜尋。

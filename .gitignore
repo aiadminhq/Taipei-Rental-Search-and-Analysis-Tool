@@ -32,6 +32,10 @@ pids
 coverage/
 .nyc_output
 
+# Playwright
+playwright-report/
+test-results/
+
 # 編譯結果
 dist/
 build/
@@ -68,3 +72,12 @@ scraper-test.js
 # 系統生成的檔案
 *.tgz
 *.tar.gz
+
+# TRSAT CLI sessions / browser profiles (never commit)
+.trsat/
+storageState*.json
+*.cookies.json
+profiles/
+# TRSAT crawl output (contains PII)
+data/listings.json
+data/raw/

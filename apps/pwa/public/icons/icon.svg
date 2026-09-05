@@ -1,0 +1,10 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- 背景 -->
+  <rect width="512" height="512" rx="64" fill="#3b82f6"/>
+  
+  <!-- 房屋圖示 -->
+  <path d="M256 80L400 200V400H320V280H192V400H112V200L256 80Z" fill="white" stroke="white" stroke-width="8" stroke-linejoin="round"/>
+  
+  <!-- CRM 文字 -->
+  <text x="256" y="450" font-family="Arial, sans-serif" font-size="48" font-weight="bold" text-anchor="middle" fill="white">CRM</text>
+</svg>

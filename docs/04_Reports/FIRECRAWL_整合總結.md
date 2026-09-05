@@ -88,7 +88,7 @@ npm run example:firecrawl
 
 2. **設定必要的 API 金鑰**:
    ```bash
-   FIRECRAWL_API_KEY=fc-6f5e1e3b20174bdeb0b5250e54238476
+   FIRECRAWL_API_KEY=fc-your-firecrawl-key
    NOTION_API_KEY=your_notion_api_key
    NOTION_DATABASE_ID=your_database_id
    ```
@@ -148,7 +148,7 @@ Notion Database
       "command": "npx",
       "args": ["-y", "firecrawl-mcp"],
       "env": {
-        "FIRECRAWL_API_KEY": "fc-6f5e1e3b20174bdeb0b5250e54238476"
+        "FIRECRAWL_API_KEY": "fc-your-firecrawl-key"
       }
     },
     "rental-crm-mcp": {
@@ -158,7 +158,7 @@ Notion Database
       "env": {
         "NODE_ENV": "production",
         "MCP_PORT": "3001",
-        "FIRECRAWL_API_KEY": "fc-6f5e1e3b20174bdeb0b5250e54238476"
+        "FIRECRAWL_API_KEY": "fc-your-firecrawl-key"
       }
     }
   }
@@ -171,7 +171,7 @@ Notion Database
 <augment_code_snippet path=".env.example" mode="EXCERPT">
 ````bash
 # Firecrawl API 配置
-FIRECRAWL_API_KEY=fc-6f5e1e3b20174bdeb0b5250e54238476
+FIRECRAWL_API_KEY=fc-your-firecrawl-key
 
 # MCP 服務器配置
 MCP_PORT=3001

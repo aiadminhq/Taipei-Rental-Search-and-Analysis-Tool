@@ -17,11 +17,14 @@
 ## 📚 文檔索引
 
 ### 核心設計
+- **[MVP 設計規格 (2026-09-05, 現行開發依據)](./superpowers/specs/2026-09-05-pwa-rental-mvp-design.md)**
+- **[資料來源擷取可行性調查 (2026-09-05)](./superpowers/research/2026-09-05-rental-source-ingestion-research.md)**
 - **[產品需求文檔 (PRD)](./00_Project_Blueprints/PRD_Master.md)**
 - **[應用程式藍圖 (App Blueprint)](./00_Project_Blueprints/App_Blueprint_Master.md)**
 - **[資料庫結構](./00_Project_Blueprints/資料庫欄位.md)**
 
 ### 開發計畫
+- **[Phase 0–1 實作計畫（core + PWA，2026-09-05）](./superpowers/plans/2026-09-05-pwa-rental-mvp-phase0-1-plan.md)**
 - **[MVP 開發計畫](./01_Development_Plans/MVP_Development_Plan.md)**
 
 ### 技術指南
@@ -31,6 +34,8 @@
 - **[監控系統指南](./02_Technical_Guides/MONITOR-GUIDE.md)**
 
 ### 設計規範
+- **[Claude Design 原型提示詞包（2026-09-05）](./03_UX_UI_Design/Claude_Design_Prompts_PWA_Prototype.md)**
+- **[原型參考資料包：tokens、元件清單、文案表、樣本資料（2026-09-05）](./03_UX_UI_Design/Prototype_Reference_Kit.md)**
 - **[UI/UX 設計指南](./03_UX_UI_Design/UIUX_Master_Guide.md)**
 
 ### 報告與總結

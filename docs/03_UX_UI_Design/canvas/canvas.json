@@ -1,0 +1,88 @@
+{
+  "artboards": [
+    {
+      "file": "Onboarding.dc.html",
+      "title": "OB · 首次啟用（步驟 2）",
+      "x": 0,
+      "y": 0,
+      "w": 390,
+      "h": 844
+    },
+    {
+      "file": "Share.dc.html",
+      "title": "S1 · 分享接收（高信心）",
+      "x": 480,
+      "y": 0,
+      "w": 390,
+      "h": 844
+    },
+    {
+      "file": "ShareLowConfidence.dc.html",
+      "title": "S1 · 分享接收（低信心）",
+      "x": 960,
+      "y": 0,
+      "w": 390,
+      "h": 844
+    },
+    {
+      "file": "Inbox.dc.html",
+      "title": "S2 · 收件匣（滑動中）",
+      "x": 1440,
+      "y": 0,
+      "w": 390,
+      "h": 1000
+    },
+    {
+      "file": "InboxPaste.dc.html",
+      "title": "S2 · 收件匣（空狀態 + 貼上）",
+      "x": 1920,
+      "y": 0,
+      "w": 390,
+      "h": 844
+    },
+    {
+      "file": "Main.dc.html",
+      "title": "S3 · 房源清單",
+      "x": 0,
+      "y": 1160,
+      "w": 390,
+      "h": 1010
+    },
+    {
+      "file": "Detail.dc.html",
+      "title": "S4 · 房源詳情",
+      "x": 480,
+      "y": 1160,
+      "w": 390,
+      "h": 1380
+    },
+    {
+      "file": "Compare.dc.html",
+      "title": "S5 · 比較",
+      "x": 960,
+      "y": 1160,
+      "w": 390,
+      "h": 844
+    },
+    {
+      "file": "Settings.dc.html",
+      "title": "S6 · 設定",
+      "x": 1440,
+      "y": 1160,
+      "w": 390,
+      "h": 1560
+    }
+  ],
+  "annotations": [
+    {
+      "id": "brief",
+      "x": 0,
+      "y": -200,
+      "w": 460,
+      "text": "TRSAT 租屋收件匣 PWA 原型（靜態 hi-fi）\n依 spec 第 7 節與 Prototype_Reference_Kit tokens 繪製。\n第一列：Onboarding → S1 分享接收 → S2 收件匣。第二列：S3 清單 → S4 詳情 → S5 比較 → S6 設定。\n所有房源資料為虛構（電話 0912-000-xxx）。三色分級：綠 符合／琥珀 待確認／灰 不符。"
+    }
+  ],
+  "launch": {
+    "view": "canvas"
+  }
+}

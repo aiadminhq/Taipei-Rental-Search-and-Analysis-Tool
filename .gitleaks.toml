@@ -1,0 +1,14 @@
+title = "TRSAT gitleaks config"
+[extend]
+useDefault = true
+[allowlist]
+description = "placeholders used in examples"
+regexes = [
+  '''fc-your-firecrawl-key''',
+  '''your-magic-api-key''',
+  '''ntn_your_notion_key''',
+]
+paths = [
+  '''^package-lock\.json$''',
+  '''^legacy/package-lock\.json$''',
+]
