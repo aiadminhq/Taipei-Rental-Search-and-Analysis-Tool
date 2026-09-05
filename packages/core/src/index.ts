@@ -5,3 +5,4 @@ export * from './dictionaries';
 export * from './extract';
 export * from './parse';
 export * from './rules';
+export * from './dedupe';
