@@ -34,6 +34,7 @@
 - **[監控系統指南](./02_Technical_Guides/MONITOR-GUIDE.md)**
 
 ### 設計規範
+- **[Claude Design 原型提示詞包（2026-09-05）](./03_UX_UI_Design/Claude_Design_Prompts_PWA_Prototype.md)**
 - **[UI/UX 設計指南](./03_UX_UI_Design/UIUX_Master_Guide.md)**
 
 ### 報告與總結
