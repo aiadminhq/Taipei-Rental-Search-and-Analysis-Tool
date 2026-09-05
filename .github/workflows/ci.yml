@@ -35,8 +35,10 @@ jobs:
         with: { node-version: 22, cache: npm }
       - run: npm ci
       - run: npx playwright install --with-deps chromium
+      # Match production: Pages serves the app from /<repo>/, and the webServer build in
+      # playwright.config picks VITE_BASE_PATH up from here.
       - run: npm run e2e -w apps/pwa
-        env: { CI: 'true' }
+        env: { CI: 'true', VITE_BASE_PATH: "/${{ github.event.repository.name }}/" }
       - uses: actions/upload-artifact@v4
         if: failure()
         with: { name: playwright-report, path: apps/pwa/playwright-report }

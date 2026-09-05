@@ -14,8 +14,10 @@ function attachDiagnostics(page: Page): void {
   page.on('requestfailed', (r) => diag.push(`requestfailed:${r.url()}:${r.failure()?.errorText ?? ''}`));
 }
 
+// Every navigation is base-relative ('./…'), so the suite resolves against playwright.config's
+// baseURL and exercises whatever VITE_BASE_PATH the build used — root locally, /<repo>/ in CI.
 async function resetAndOnboard(page: Page): Promise<void> {
-  await page.goto('/', { waitUntil: 'domcontentloaded' });
+  await page.goto('./', { waitUntil: 'domcontentloaded' });
   // Unregister any service worker first — a stale precached index.html surviving
   // across tests would otherwise mask a real app change, and can also hold an
   // IndexedDB connection open.
@@ -80,7 +82,7 @@ test.afterEach(async ({ page }, testInfo) => {
 });
 
 test('share_target query → preview → 加入 → listed', async ({ page }) => {
-  await page.goto(`/?text=${encodeURIComponent(post)}`, { waitUntil: 'domcontentloaded' });
+  await page.goto(`./?text=${encodeURIComponent(post)}`, { waitUntil: 'domcontentloaded' });
   await expect(page.getByText('NT$14,500')).toBeVisible();
   await expect(page.getByText('符合').first()).toBeVisible();
   await page.getByRole('button', { name: '加入房源' }).click();
@@ -94,32 +96,32 @@ test('works offline after first load', async ({ page, context }) => {
   // proxied network this abort can take several seconds to settle instead of
   // failing instantly, so give this test extra wall-clock headroom.
   test.setTimeout(60_000);
-  await page.goto(`/?text=${encodeURIComponent(post)}`, { waitUntil: 'domcontentloaded' });
+  await page.goto(`./?text=${encodeURIComponent(post)}`, { waitUntil: 'domcontentloaded' });
   await page.getByRole('button', { name: '加入房源' }).click();
   await expect(page).toHaveURL(/#\/$/);
   await page.waitForFunction(() => navigator.serviceWorker?.controller !== null);
   await context.setOffline(true);
   await page.reload({ waitUntil: 'domcontentloaded' });
   await expect(page.getByText('NT$14,500')).toBeVisible();
-  await page.goto(`/?text=${encodeURIComponent('中和雅房 8000')}`, { waitUntil: 'domcontentloaded' });
+  await page.goto(`./?text=${encodeURIComponent('中和雅房 8000')}`, { waitUntil: 'domcontentloaded' });
   await expect(page.getByText('NT$8,000')).toBeVisible();
   await context.setOffline(false);
 });
 
 test('export then import restores data', async ({ page }) => {
   test.setTimeout(60_000);
-  await page.goto(`/?text=${encodeURIComponent(post)}`, { waitUntil: 'domcontentloaded' });
+  await page.goto(`./?text=${encodeURIComponent(post)}`, { waitUntil: 'domcontentloaded' });
   await page.getByRole('button', { name: '加入房源' }).click();
   // Wait for the add() handler's own SPA navigation (history.replaceState) to land
   // before doing a hard `goto` — otherwise the goto can race the in-flight write/
   // navigate and tear down the document before it settles.
   await expect(page).toHaveURL(/#\/$/);
-  await page.goto('/#/settings', { waitUntil: 'domcontentloaded' });
+  await page.goto('./#/settings', { waitUntil: 'domcontentloaded' });
   const [download] = await Promise.all([page.waitForEvent('download'), page.getByRole('button', { name: '匯出 JSON' }).click()]);
   const path = await download.path();
   await resetAndOnboard(page);
-  await page.goto('/#/settings', { waitUntil: 'domcontentloaded' });
+  await page.goto('./#/settings', { waitUntil: 'domcontentloaded' });
   await page.locator('input[type=file]').setInputFiles(path!);
-  await page.goto('/#/', { waitUntil: 'domcontentloaded' });
+  await page.goto('./#/', { waitUntil: 'domcontentloaded' });
   await expect(page.getByText('NT$14,500')).toBeVisible();
 });

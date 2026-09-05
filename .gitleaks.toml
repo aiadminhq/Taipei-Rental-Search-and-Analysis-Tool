@@ -9,6 +9,6 @@ regexes = [
   '''ntn_your_notion_key''',
 ]
 paths = [
-  '''package-lock\.json''',
-  '''legacy/package-lock\.json''',
+  '''^package-lock\.json$''',
+  '''^legacy/package-lock\.json$''',
 ]
