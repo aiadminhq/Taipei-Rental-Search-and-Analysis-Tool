@@ -1,4 +1,4 @@
-import { useEffect } from 'preact/hooks';
+import { useEffect, useState } from 'preact/hooks';
 import { matchPath, useHashRoute } from './router';
 import { BottomNav } from './components/BottomNav';
 import { ToastHost } from './components/Toast';
@@ -8,6 +8,7 @@ import { ListingsScreen } from './screens/Listings';
 import { DetailScreen } from './screens/Detail';
 import { CompareScreen } from './screens/Compare';
 import { SettingsScreen } from './screens/Settings';
+import { Onboarding, isOnboarded } from './screens/Onboarding';
 import { readSharePayload, stashShare } from './lib/share';
 import { useLive } from './hooks';
 import { db } from './db';
@@ -15,6 +16,7 @@ import { db } from './db';
 export function App() {
   const route = useHashRoute();
   const inboxCount = useLive(() => db.inbox.count(), [], 0);
+  const [onboarded, setOnb] = useState<boolean | null>(null);
 
   useEffect(() => {
     const p = readSharePayload(location.search);
@@ -24,6 +26,11 @@ export function App() {
       dispatchEvent(new HashChangeEvent('hashchange'));
     }
   }, []);
+
+  useEffect(() => { isOnboarded().then(setOnb); }, []);
+
+  if (onboarded === null) return null;
+  if (!onboarded && route.path !== '/share') return <><Onboarding onDone={() => setOnb(true)} /><ToastHost /></>;
 
   let screen;
   const detail = matchPath('/l/:id', route.path);
