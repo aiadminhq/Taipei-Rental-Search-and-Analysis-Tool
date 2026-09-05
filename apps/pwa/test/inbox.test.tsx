@@ -23,6 +23,21 @@ describe('InboxScreen', () => {
     fireEvent.click((await screen.findAllByRole('button', { name: '略過' }))[0]);
     await waitFor(async () => expect(await db.inbox.count()).toBe(0));
   });
+  it('preview fields are read-only; 編輯 hands the item to the share screen', async () => {
+    sessionStorage.clear();
+    await addInbox({ text: '大安區套房 14000 可養貓' });
+    render(<InboxScreen query={new URLSearchParams()} />);
+    await screen.findByText('NT$14,000');
+    // no live inputs in the inbox — a keystroke there would be eaten by the navigation
+    expect(screen.queryByRole('spinbutton', { name: '租金' })).toBeNull();
+    expect(screen.queryByRole('combobox', { name: '房型' })).toBeNull();
+    expect(screen.getByLabelText('房型').textContent).toBe('套房');
+
+    fireEvent.click(screen.getByRole('button', { name: '編輯' }));
+    await waitFor(async () => expect(await db.inbox.count()).toBe(0));
+    expect(location.hash).toBe('#/share');
+    expect(sessionStorage.getItem('trsat:share')).toContain('大安區套房');
+  });
   it('opens paste sheet when ?paste=1', async () => {
     render(<InboxScreen query={new URLSearchParams('paste=1')} />);
     expect(await screen.findByRole('dialog', { name: '貼上房源' })).toBeTruthy();

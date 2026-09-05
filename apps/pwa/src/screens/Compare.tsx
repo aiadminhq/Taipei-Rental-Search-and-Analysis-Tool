@@ -40,7 +40,7 @@ export function CompareScreen() {
               <th class="w-20"></th>
               {items.map((l) => (
                 <th key={l.id} class="min-w-36 px-2 pb-2 text-left align-top">
-                  <button class="line-clamp-2 text-left font-semibold underline-offset-2 hover:underline" onClick={() => navigate(`/l/${encodeURIComponent(l.id)}`)}>{l.title}</button>
+                  <button class="tap line-clamp-2 text-left font-semibold underline-offset-2 hover:underline" onClick={() => navigate(`/l/${encodeURIComponent(l.id)}`)}>{l.title}</button>
                   <div class="mt-1 flex items-center gap-2">{l.rule && <TierBadge tier={l.rule.tier} size="sm" />}<button class="tap text-xs text-gray-500" onClick={() => toggleCompare(l.id)}>移除</button></div>
                 </th>
               ))}

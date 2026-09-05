@@ -22,6 +22,9 @@ export function InboxScreen({ query }: { query: URLSearchParams }) {
     showToast('已加入房源', 'success');
   };
   const skip = async (it: InboxItem) => { await removeInbox(it.id); };
+  // Editing is an explicit intent: hand the raw share payload to the Share screen, which
+  // owns the editable preview. The inbox card itself stays read-only.
+  const edit = async (it: InboxItem) => { stashShare(it); await removeInbox(it.id); navigate('/share'); };
 
   return (
     <main class="mx-auto max-w-lg p-4 pb-24">
@@ -39,9 +42,10 @@ export function InboxScreen({ query }: { query: URLSearchParams }) {
         {items.map((it) => (
           <li key={it.id}>
             <SwipeCard onSwipeRight={() => accept(it)} onSwipeLeft={() => skip(it)}>
-              <PreviewCard listing={buildPreview(it, profile)} onChange={() => { stashShare(it); removeInbox(it.id); navigate('/share'); }} />
-              <div class="mt-2 grid grid-cols-2 gap-2">
+              <PreviewCard listing={buildPreview(it, profile)} readOnly />
+              <div class="mt-2 grid grid-cols-3 gap-2">
                 <button class="tap rounded-lg border px-2 text-sm" onClick={() => skip(it)}>略過</button>
+                <button class="tap rounded-lg border px-2 text-sm" onClick={() => edit(it)}>編輯</button>
                 <button class="tap rounded-lg bg-primary px-2 text-sm font-medium text-white" onClick={() => accept(it)}>加入</button>
               </div>
             </SwipeCard>

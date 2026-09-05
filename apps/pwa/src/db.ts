@@ -50,11 +50,38 @@ async function recomputeRules(profile: Profile): Promise<void> {
   await db.listings.bulkPut(all.map((l) => ({ ...l, rule: evaluate(l, profile, at), dedupeGroupId: groups.get(l.id) })));
 }
 
+/** Fields the user owns in-app; re-sharing the same link must never clobber them. */
+const USER_OWNED_FIELDS: readonly string[] = ['status', 'statusHistory', 'notes', 'pinned', 'enrichment'];
+
+const isEmptyValue = (v: unknown): boolean =>
+  v === undefined || v === null
+  || (Array.isArray(v) && v.length === 0)
+  || (typeof v === 'object' && !Array.isArray(v) && Object.keys(v as object).length === 0);
+
+/**
+ * Merge a freshly parsed listing onto the stored row with the same id. Listing ids are
+ * deterministic (`${source}:${sourceId}`), so a plain `put` of a re-shared link would wipe
+ * everything the user has since done to it. Keep user-owned state as-is, and let an absent
+ * or empty incoming field fall back to what we already hold (photos, enriched fields, …) —
+ * the same "undefined never erases" policy `enrich()` applies to endpoint responses.
+ */
+export function mergeIncomingListing(cur: Listing, incoming: Listing): Listing {
+  const next: Listing = { ...cur };
+  for (const [k, v] of Object.entries(incoming)) {
+    if (USER_OWNED_FIELDS.includes(k)) continue;
+    if (isEmptyValue(v)) continue;
+    (next as Record<string, unknown>)[k] = v;
+  }
+  return next;
+}
+
 export async function upsertListing(l: Listing): Promise<Listing> {
   const listing = ListingSchema.parse(l);
   return db.transaction('rw', db.profile, db.listings, async () => {
     const profile = await getProfile();
-    const withRule: Listing = { ...listing, rule: evaluate(listing, profile) };
+    const cur = await db.listings.get(listing.id);
+    const merged = cur ? mergeIncomingListing(cur, listing) : listing;
+    const withRule: Listing = { ...merged, rule: evaluate(merged, profile) };
     await db.listings.put(withRule);
     const all = await db.listings.toArray();
     const groups = assignDedupeGroups(all);
@@ -116,8 +143,15 @@ export async function importAll(raw: unknown): Promise<{ imported: number; skipp
     if (good.length === 0) { errors.unshift(`檔案格式不符：${parsed.error.issues[0]?.message ?? 'invalid'}`); return { imported: 0, skipped: 0, errors }; }
     return { ...(await mergeListings(good)), errors };
   }
-  const res = await mergeListings(parsed.data.listings);
-  if (parsed.data.inbox.length) await db.inbox.bulkPut(parsed.data.inbox);
+  const data = parsed.data;
+  // One transaction for the whole restore. The profile is written *first* because
+  // mergeListings ends with recomputeRules(), which re-tiers every listing against
+  // whatever profile is stored — so restoring it up front re-tiers in the same pass.
+  const res = await db.transaction('rw', db.profile, db.listings, db.inbox, db.syncLog, async () => {
+    await db.profile.put({ key: 'profile', value: ProfileSchema.parse(data.profile), updatedAt: nowIso() });
+    if (data.inbox.length) await db.inbox.bulkPut(data.inbox);
+    return mergeListings(data.listings);
+  });
   return { ...res, errors };
 }
 

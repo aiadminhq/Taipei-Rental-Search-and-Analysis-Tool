@@ -78,7 +78,10 @@ export function SettingsScreen() {
         <p class="text-xs text-gray-500">上次補抓成功：{lastEnrich ? new Date(lastEnrich).toLocaleString('zh-TW') : '尚無'}</p>
         <div class="flex gap-2">
           <button class="tap flex-1 rounded-lg border text-sm" onClick={async () => { const ok = await testEndpoint(endpoint); showToast(ok ? '連線成功' : '連線失敗（請確認 HTTPS 網址與 trsat serve 是否執行）', ok ? 'success' : 'error'); }}>測試連線</button>
-          <button class="tap flex-1 rounded-lg border text-sm" onClick={async () => { await setEndpoint(endpoint); showToast('已儲存 endpoint', 'success'); }}>儲存</button>
+          <button class="tap flex-1 rounded-lg border text-sm" onClick={async () => {
+            try { await setEndpoint(endpoint); showToast('已儲存 endpoint', 'success'); }
+            catch (e) { showToast((e as Error).message, 'error'); }
+          }}>儲存</button>
         </div>
       </section>
 

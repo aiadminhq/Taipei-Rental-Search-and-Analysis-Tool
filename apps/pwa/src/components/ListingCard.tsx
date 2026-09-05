@@ -1,13 +1,17 @@
-import { DEFAULT_PROFILE, type Listing } from '@trsat/core';
+import type { Listing } from '@trsat/core';
 import { TierBadge } from './TierBadge';
 import { formatRent, sourceLabel, STATUS_LABEL } from '../lib/format';
 
+const MISSING_PREFIX = 'missing_equipment:';
+
 export function ListingCard({ listing: l, extraCount = 0, onClick }: { listing: Listing; extraCount?: number; onClick: () => void }) {
-  const missing = DEFAULT_PROFILE.mustHave.filter((m) => !l.equipment.includes(m));
+  // Read the gaps off the evaluated rule rather than re-deriving them from DEFAULT_PROFILE,
+  // so a user who customised 必備設備 sees 缺X for *their* list.
+  const missing = (l.rule?.reasons ?? []).filter((r) => r.code.startsWith(MISSING_PREFIX)).map((r) => r.code.slice(MISSING_PREFIX.length));
   const tags = l.equipment.slice(0, 3);
   return (
     <article class="rounded-xl border border-gray-200 bg-white p-3 shadow-sm active:bg-gray-50 dark:border-gray-800 dark:bg-gray-900" onClick={onClick} role="button" tabIndex={0}
-      onKeyDown={(e) => { if (e.key === 'Enter') onClick(); }}>
+      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onClick(); } }}>
       <div class="flex items-start justify-between gap-2">
         <p class="text-xl font-bold">{formatRent(l.rent)}</p>
         <div class="flex items-center gap-1">

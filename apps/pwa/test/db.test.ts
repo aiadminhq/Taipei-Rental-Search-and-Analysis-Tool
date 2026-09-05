@@ -37,6 +37,25 @@ describe('listings', () => {
     const p = await db.listings.get(a.id);
     expect(p?.rent).toBe(13000); expect(p!.updatedAt > now).toBe(true);
   });
+  it('re-sharing the same link keeps user-owned state and does not erase enriched fields', async () => {
+    const text = '大安區套房 14000 變頻冷氣 冰箱 洗衣機 對外窗 可養貓 捷運古亭站 步行5分';
+    const a = await upsertListing(mk(text));
+    await setStatus(a.id, 'viewed', '2026-09-06T00:00:00.000Z');
+    await patchListing(a.id, { notes: '房東好聊', pinned: true, enrichment: 'done', photos: ['https://img/1.jpg'], address: '大安路一段 1 號' });
+
+    const again = await upsertListing(mk(text));   // ids are deterministic → same row
+    expect(again.id).toBe(a.id);
+    expect(await db.listings.count()).toBe(1);
+    expect(again.status).toBe('viewed');
+    expect(again.statusHistory.at(-1)).toEqual({ status: 'viewed', at: '2026-09-06T00:00:00.000Z' });
+    expect(again.notes).toBe('房東好聊');
+    expect(again.pinned).toBe(true);
+    expect(again.enrichment).toBe('done');
+    // incoming has no photos / address of its own — absent must not erase what we hold
+    expect(again.photos).toEqual(['https://img/1.jpg']);
+    expect(again.address).toBe('大安路一段 1 號');
+    expect(again.rule?.tier).toBe('pass');
+  });
 });
 
 describe('inbox / compare', () => {
@@ -66,5 +85,24 @@ describe('export / import', () => {
     expect((await db.listings.get(a.id))?.rent).toBe(14000);
     const bad = await importAll({ version: 1, listings: [{ id: 'x' }] });
     expect(bad.errors.length).toBeGreaterThan(0);
+  });
+  it('restores the exported profile and re-tiers listings against it', async () => {
+    const a = await upsertListing(mk('大安區套房 14000 變頻冷氣 冰箱 洗衣機 對外窗 可養貓 捷運古亭站 步行5分'));
+    expect((await db.listings.get(a.id))?.rule?.tier).toBe('pass');
+    await addInbox({ text: '中和雅房 8000' });
+
+    const custom = { ...DEFAULT_PROFILE, budget: { 套房: 10000, 雅房: 8000 }, mrtWalkMaxMin: 3 };
+    await saveProfile(custom);
+    const file = await exportAll();
+    expect(file.profile).toEqual(custom);
+
+    await clearAll();
+    expect(await getProfile()).toEqual(DEFAULT_PROFILE);
+
+    await importAll(file);
+    expect(await getProfile()).toEqual(custom);
+    // re-tiered against the restored profile, not the defaults it was cleared to
+    expect((await db.listings.get(a.id))?.rule?.tier).toBe('fail');
+    expect(await db.inbox.count()).toBe(1);
   });
 });
