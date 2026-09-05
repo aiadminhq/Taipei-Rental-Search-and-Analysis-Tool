@@ -6,6 +6,7 @@ import { ShareScreen } from './screens/Share';
 import { InboxScreen } from './screens/Inbox';
 import { ListingsScreen } from './screens/Listings';
 import { DetailScreen } from './screens/Detail';
+import { CompareScreen } from './screens/Compare';
 import { readSharePayload, stashShare } from './lib/share';
 import { useLive } from './hooks';
 import { db } from './db';
@@ -32,7 +33,7 @@ export function App() {
   if (route.path === '/share') screen = <ShareScreen />;
   else if (detail) screen = <DetailScreen id={detail.id} />;
   else if (route.path === '/inbox') screen = <InboxScreen query={route.query} />;
-  else if (route.path === '/compare') screen = <Placeholder name="比較" />;
+  else if (route.path === '/compare') screen = <CompareScreen />;
   else if (route.path === '/settings') screen = <Placeholder name="設定" />;
   else screen = <ListingsScreen />;
 
