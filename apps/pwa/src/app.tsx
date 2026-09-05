@@ -3,6 +3,7 @@ import { useHashRoute } from './router';
 import { BottomNav } from './components/BottomNav';
 import { ToastHost } from './components/Toast';
 import { ShareScreen } from './screens/Share';
+import { InboxScreen } from './screens/Inbox';
 import { readSharePayload, stashShare } from './lib/share';
 import { useLive } from './hooks';
 import { db } from './db';
@@ -26,7 +27,7 @@ export function App() {
 
   let screen;
   if (route.path === '/share') screen = <ShareScreen />;
-  else if (route.path === '/inbox') screen = <Placeholder name="收件匣" />;
+  else if (route.path === '/inbox') screen = <InboxScreen query={route.query} />;
   else if (route.path === '/compare') screen = <Placeholder name="比較" />;
   else if (route.path === '/settings') screen = <Placeholder name="設定" />;
   else screen = <Placeholder name="房源" />;
