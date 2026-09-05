@@ -1,7 +1,8 @@
 # TRSAT PWA 租屋收件匣 MVP：設計規格（PRD v2 精簡版 + UIUX + 擷取架構）
 
 **日期**：2026-09-05
-**狀態**：Draft，待使用者審閱
+**狀態**：Draft v0.2，待使用者審閱
+**變更紀錄**：v0.2（2026-09-05）依使用者回饋改為 A+B 混合方案，並以「個人 Profile」定義排程抓取範圍與驗收標準
 **分支**：`claude/pwa-rental-crawler-mvp-j6dyt4`
 **取代**：`docs/00_Project_Blueprints/PRD_Master.md` 中所有企業級需求（微服務、PostgreSQL + MongoDB、1000 併發、三年歷史資料、JWT/RBAC）。該文件保留為歷史參考，不再作為開發依據。
 **依據**：`docs/superpowers/research/2026-09-05-rental-source-ingestion-research.md`（資料來源可行性調查）、`docs/_Archive/Christian Wu's個人租屋需求.MD`（使用者實際需求）、`docs/00_Project_Blueprints/資料庫欄位.md`（欄位優先順序）
@@ -10,15 +11,16 @@
 
 ## 0. 一頁摘要
 
-本專案重新定位為**單人使用、私有部署、local-first 的租屋收件匣（Rental Inbox）PWA**，搭配一支在使用者自己電腦上執行的 `trsat` CLI 負責需要瀏覽器與登入 session 的擷取工作。
+本專案重新定位為**單人使用、私有部署、local-first 的租屋收件匣（Rental Inbox）PWA**，搭配一支在使用者自己電腦上執行的 `trsat` CLI。CLI 有兩種工作模式：(1) **排程抓取**（`trsat watch`）：只針對無需登入的 591 與 PTT，且搜尋範圍完全由使用者的個人 Profile 決定；(2) **單筆補抓**（`trsat fetch`）：處理由手機分享進來、需要瀏覽器或登入 session 的 Threads / Facebook 連結。
 
-核心流程只有一條：**在任何 App 看到房源 → 分享／貼上 → PWA 立即以本地規則解析並依個人硬條件分級 → 進入房源清單追蹤看房狀態 → 需要完整資料時由 CLI 補抓**。
+兩條進料路徑匯入同一個收件匣：**（主動）排程抓取依 Profile 自動找出符合條件的 591 / PTT 房源 → 進入收件匣；（被動）在任何 App 看到房源 → 分享／貼上 → PWA 立即以本地規則解析並分級**。之後皆進入房源清單追蹤看房狀態，需要完整資料時由 CLI 補抓。
 
 三個關鍵設計決策：
 
 1. **登入資訊永不離開使用者裝置**。Facebook / Threads 搜尋等需登入的擷取，只在使用者電腦上以 Playwright persistent browser profile 執行；PWA 與任何雲端元件都不接觸 cookie。
 2. **漸進式擷取（progressive ingestion）**。PWA 離線也能靠 URL 與貼上文字得到「可用的」房源卡片；CLI 或可選的 fetch endpoint 只負責「補完」。沒有 CLI 時產品仍可操作。
 3. **確定性硬規則優先於 AI 評分**。以使用者的預算、必備設備、寵物、捷運距離、謝絕條件為第一層分級（符合／待確認／不符）；AI 摘要與軟評分列為 Phase 3。
+4. **個人 Profile 同時是抓取範圍與驗收標準**。排程抓取的搜尋參數由 Profile 產生，不抓全市資料；MVP 是否合格，以「抓回來的房源經規則引擎判定後，與使用者人工判讀一致」為準（第 2.3、6.5、11 節）。
 
 MVP 交付範圍為 Phase 0 到 Phase 2（見第 9 節），預估 5 到 7 個工作天。
 
@@ -75,6 +77,9 @@ MVP 交付範圍為 Phase 0 到 Phase 2（見第 9 節），預估 5 到 7 個�
 | 硬規則分級與人工判讀一致率 | ≥ 90%（同 fixture） |
 | Lighthouse PWA 安裝條件 | 全數通過 |
 | 核心套件測試覆蓋 | parsers / rules / dedupe 各有 fixture 測試 |
+| Profile 驅動排程抓取（591）單輪 | 回傳 ≥ 20 筆，其中 ≥ 70% 經規則引擎判為「符合」或「待確認」；0 筆超出 Profile 城市範圍 |
+| Profile 驅動排程抓取（PTT）單輪 | 近 5 頁中所有標題符合 Profile 地區與房型的貼文皆被擷取（以人工標註 fixture 對照，召回率 ≥ 90%） |
+| 排程抓取結果與人工判讀 | 抽樣 30 筆，分級一致率 ≥ 90%（此即使用者所指「以個人需求為測試標準」） |
 
 ---
 
@@ -82,11 +87,13 @@ MVP 交付範圍為 Phase 0 到 Phase 2（見第 9 節），預估 5 到 7 個�
 
 | 方案 | 概要 | 優勢 | 風險／成本 | 決策 |
 |---|---|---|---|---|
-| **A. Local-first PWA + 本機 CLI（採用）** | PWA 靜態部署於 GitHub Pages，資料存 IndexedDB；需瀏覽器或登入的擷取由使用者電腦上的 `trsat` CLI 完成，結果以 JSON 匯入或經使用者自架的 fetch endpoint 回傳 | session 不離開裝置、零主機費、離線可用、最快可操作、符合個資法私有前提 | 手機與電腦兩個執行環境；補抓需電腦開機 | **採用** |
-| B. 雲端排程爬蟲服務 | VPS 排程 Playwright + 持久 session，PWA 讀雲端 API | 全自動、純手機操作 | 社群帳號 cookie 上雲，checkpoint / 封號風險最高；資料中心 IP 被 Meta 與 591 標記；主機與維運成本；公開端點需自建認證 | 不採用；Phase 3 可用 Apify 取代自架 |
+| **A. Local-first PWA + 本機 CLI（採用）** | PWA 靜態部署於 GitHub Pages，資料存 IndexedDB；需瀏覽器或登入的擷取由使用者電腦上的 `trsat` CLI 完成，結果以 JSON 匯入或經使用者自架的 fetch endpoint 回傳 | session 不離開裝置、零主機費、離線可用、最快可操作、符合個資法私有前提 | 手機與電腦兩個執行環境；補抓需電腦開機 | **採用（基礎）** |
+| B. 雲端排程爬蟲服務 | VPS 排程 Playwright + 持久 session，PWA 讀雲端 API | 全自動、純手機操作 | 社群帳號 cookie 上雲，checkpoint / 封號風險最高；資料中心 IP 被 Meta 與 591 標記；主機與維運成本；公開端點需自建認證 | **部分採用（B-lite）**：只保留「排程自動抓取」這個特性，且限制為 (a) 無需登入的 591 與 PTT、(b) 搜尋範圍由 Profile 決定、(c) 預設在使用者自己的電腦排程執行；雲端執行列為可選（見 D7）。FB / Threads 的排程搜尋仍不採用 |
 | C. 延續 Notion + MCP 架構 | Notion 為資料庫，三個 Node 服務並行 | 重用既有程式碼 | 三個常駐 process、Notion API 限速、與離線 PWA 目標衝突、現有 PWA 外殼本身不可用 | 不採用；程式碼保留為 legacy |
 
-**採用 A 的理由**：目標是「快速打造可操作 MVP」且使用者為單人。A 在第一天就能交付可安裝、可離線、可分享進來的 PWA；登入相關風險被隔離在使用者可控的本機環境；未來若需自動化，可在不改 PWA 的前提下把 CLI 換成 Apify webhook 或雲端 worker。
+**採用 A+B（B-lite）的理由**：A 在第一天就能交付可安裝、可離線、可分享進來的 PWA，登入相關風險被隔離在使用者可控的本機環境。B 的「自動化」價值在 591 與 PTT 上可以零風險取得（兩者皆不需登入、資料結構化、規則明確），因此以 `trsat watch` 排程納入；B 的高風險部分（社群帳號 cookie 上雲、全市大量抓取）則排除。把抓取範圍鎖定在 Profile 有三個效果：抓取量小到不會觸發 591 假資料機制、資料庫內容天然就是「候選名單」、以及 MVP 有一個可客觀驗收的標準。
+
+**資料存放前提**：本 repo 為 public。排程抓取結果含房東電話等個資，**不得寫入本 repo 或任何公開位置**；預設寫入使用者電腦 `~/.trsat/data/trsat.sqlite`，再以 JSON 或 `trsat serve` 交給 PWA。若選擇雲端排程（D7 替代方案），輸出必須落在私有 repo 或私有儲存。
 
 ---
 
@@ -110,6 +117,7 @@ MVP 交付範圍為 Phase 0 到 Phase 2（見第 9 節），預估 5 到 7 個�
 │  trsat CLI (packages/cli, Node 22 + Playwright)                       │
 │   ├─ trsat fetch <url>        單筆補抓（591 / Threads / FB / PTT）     │
 │   ├─ trsat search 591 --profile 依個人條件抓 591 列表 + 詳情           │
+│   ├─ trsat watch              依 Profile 排程抓 591 + PTT（launchd/cron）│
 │   ├─ trsat ptt                抓 Rent_apart 近 N 頁                    │
 │   ├─ trsat login <fb|threads> 開啟 headed 瀏覽器由使用者手動登入        │
 │   ├─ trsat sessions status    檢查 session 是否仍有效                  │
@@ -147,6 +155,8 @@ docs/superpowers/   specs / research / plans
 | `cli/sources/*` | 每來源一個 fetcher：591 bff API、Threads hidden JSON、FB persistent profile、PTT HTML | `fetchOne(url)`, `search(profile)` | Playwright, undici, core |
 | `cli/sessions` | persistent context 建立、有效性檢查、login wall 偵測 | `openContext(source)`, `status()` | Playwright |
 | `cli/store` | SQLite listings + raw payload；匯出 PWA 相容 JSON | `upsert()`, `export()` | better-sqlite3, core |
+| `cli/watch` | 讀取 Profile → `core/profileQuery` 產生各來源搜尋參數 → 依序執行 591 search 與 PTT 批次 → upsert → 寫入 run log；單執行緒、隨機延遲、每輪上限 | `trsat watch --once`、`trsat watch --install-launchd` | sources, store, core |
+| `core/profileQuery` | 把 Profile 轉成各來源的搜尋參數與後過濾條件（見 6.5） | `toQuery591(profile)`, `toFilterPtt(profile)` | schema |
 | `cli/serve` | 本機 HTTP server，只綁 127.0.0.1 或 Tailscale 介面 | `POST /api/fetch`, `GET /api/listings?since=` | fastify 或 node:http |
 
 **邊界檢查**：`core` 不得 import DOM、Node、Playwright；PWA 不得知道 cookie 或 profile 目錄存在；CLI 不得寫入 PWA 儲存空間（只透過 JSON 或 HTTP 交換）。
@@ -244,6 +254,21 @@ interface Profile {
 ### 6.4 去重（`core/dedupe`）
 依序：`phoneNormalized` 相同 → 同群；`photoHashes` 任一漢明距離 ≤ 6 → 同群；`|rent 差| ≤ 500 且 district 相同且 |areaPing 差| ≤ 1` → 標「疑似重複」但不自動合併。同群者在清單以「+N 同房源」摺疊顯示，使用者可拆分。
 
+### 6.5 Profile 驅動的抓取範圍（`core/profileQuery`）
+排程抓取不抓全市資料，而是把 Profile 翻譯成各來源的查詢參數，再以規則引擎做後過濾。此對應表同時是驗收測試的 fixture 依據。
+
+| Profile 欄位 | 591 查詢參數（bff list API） | PTT Rent_apart 後過濾 |
+|---|---|---|
+| `cities` 台北市／新北市 | `region=1`（台北）與 `region=3`（新北）各跑一輪 | 標題 `[地區]` 兩字對應台北 12 區與新北常見區名詞典 |
+| `budget.套房` 15000、`budget.雅房` 10000 | `kind=2`（獨立套房）`rentprice=0,15000`；`kind=4`（雅房）`rentprice=0,10000`；`kind=3`（分租套房）沿用套房預算 | 內文租金 regex ≤ 對應房型預算 + tolerance |
+| `pets.required` | 加 `other=pet`（591 可養寵物選項） | 內文含「可養寵物／可養貓」加分；含禁寵關鍵字 → 排除 |
+| `mrtWalkMaxMin` 15 | 不在查詢層過濾（591 捷運參數需站點 ID）；於後過濾以 `mrtWalkMin` 判定 | 內文「捷運…分」regex |
+| `mustHave` | 不在查詢層過濾；後過濾標「待確認」 | 同左 |
+| `dealBreakerKeywords` | 後過濾 → 不符 | 同左 |
+| `moveInBefore` | 後過濾 `availableFrom` | 同左 |
+
+591 參數代碼以實作時實測為準（`region`、`kind`、`other` 的值在既有開源專案間一致，但需在 Phase 2 第一天以真實回應確認並寫入 fixture）。每輪上限：591 每 region × kind 組合最多 3 頁（約 90 筆）、PTT 最多 5 頁；輪與輪之間至少 30 分鐘。
+
 ---
 
 ## 7. PWA UIUX 規格
@@ -328,8 +353,8 @@ Inbox 有未處理數量 badge。首次開啟顯示 3 步 onboarding：安裝到
 |---|---|---|---|
 | **0. 清理與骨架** | 金鑰清除 + gitleaks；npm workspaces；`packages/core` schema + parser 骨架 + vitest；`apps/pwa` Vite + Preact + Tailwind + Dexie + vite-plugin-pwa 空殼可安裝；CI：test + build + Pages deploy | 可安裝的空 PWA、綠色 CI | 0.5–1 天 |
 | **1. PWA 可操作 MVP** | share_target + 貼上；591/Threads/FB/PTT URL 與文字 parser（含 30 筆 fixture）；rules 引擎 + Profile 設定；Inbox / Listings / Detail / Compare；狀態流程；匯出匯入 | 手機可日常使用，無後端 | 2–3 天 |
-| **2. CLI 補抓** | `trsat` 指令集；591 bff fetch + search；PTT 批次；Threads 匿名單篇；FB persistent profile 單篇；sessions 管理；SQLite；`serve` + PWA endpoint 串接；pHash 去重 | 完整資料補完、批次匯入 | 2–3 天 |
-| 3. 增強（本規格外） | LLM 抽取 fallback、AI 摘要與軟評分、Apify webhook、Telegram 推播、樂屋／信義／好房、iOS 捷徑檔、legacy `src/` 移除 | — | 另立 spec |
+| **2. CLI 補抓 + Profile 排程抓取** | `trsat` 指令集；`core/profileQuery`；591 bff search（Profile 驅動）+ 詳情；PTT 批次；`trsat watch --once` 與 `--install-launchd`（macOS）/ cron 範本；Threads 匿名單篇；FB persistent profile 單篇；sessions 管理；SQLite；`serve` + PWA endpoint 串接；pHash 去重；以真實 Profile 抓取結果建立 30 筆驗收 fixture | 每日自動產生符合個人條件的候選名單；完整資料補完 | 3–4 天 |
+| 3. 增強（本規格外） | 雲端排程 runner（GitHub Actions cron，需私有 repo 存放輸出）、LLM 抽取 fallback、AI 摘要與軟評分、Apify webhook、Telegram 推播、樂屋／信義／好房、iOS 捷徑檔、legacy `src/` 移除 | — | 另立 spec |
 
 Phase 0–2 為本規格的實作計畫範圍。
 
@@ -354,19 +379,21 @@ Phase 0–2 為本規格的實作計畫範圍。
 
 - **`packages/core`（vitest）**：每個 parser 對應 `fixtures/<source>/*.txt|json` 至少 8 筆真實去識別化樣本，斷言關鍵欄位與 confidence；rules 引擎以表驅動測試覆蓋每條規則與三級分級；dedupe 覆蓋電話格式變體與 pHash 距離邊界。
 - **`apps/pwa`（vitest + @testing-library/preact，Playwright e2e smoke）**：`/?text=...` 導入 → 卡片出現 → 加入 → 清單可見；離線模式（Playwright `context.setOffline(true)`）下同流程成立；匯出再匯入資料一致。
-- **`packages/cli`（vitest）**：fetcher 以錄製的 HTML / JSON fixture 測試解析；sessions 的 login wall 偵測以 fixture 頁面測試；不在 CI 打真實網站。
+- **`packages/cli`（vitest）**：fetcher 以錄製的 HTML / JSON fixture 測試解析；`profileQuery` 以表驅動測試確認 Profile → 查詢參數對應；sessions 的 login wall 偵測以 fixture 頁面測試；不在 CI 打真實網站。
+- **驗收測試（手動，Phase 2 結尾）**：以使用者真實 Profile 執行 `trsat watch --once`，將結果匯入 PWA，抽樣 30 筆由使用者人工判讀，對照規則引擎分級，一致率 ≥ 90% 即通過；不一致案例回寫為 rules fixture。此為使用者指定的「以個人需求為測試標準」。
 - **CI（GitHub Actions）**：`npm test` + `npm run build` + gitleaks；main 分支綠燈後部署 `apps/pwa/dist` 至 Pages。既有 `deploy.yml` 改寫為此流程。
 
 ---
 
 ## 12. 待使用者確認的決策
 
-以下已採預設值並可直接開發；若使用者偏好不同，回覆後調整。
+以下已採預設值並可直接開發；若使用者偏好不同，回覆後調整。使用者已於 2026-09-05 確認：採 A+B 混合、抓取範圍以個人需求為準並作為測試標準（反映於第 0、2.3、3、6.5、9、11 節）。
 
 | # | 決策 | 預設 | 替代 |
 |---|---|---|---|
 | D1 | 前端框架 | Preact + TypeScript（與 core 共用型別、體積小） | 沿用 Alpine.js（現有熟悉度，但無型別共用） |
 | D2 | 手機 ↔ 電腦資料交換 | 手動 JSON 匯出匯入為必要；`trsat serve` + Tailscale Funnel 為可選 | 直接用 Telegram bot 當收件匣（需 bot token 與常駐） |
+| D7 | 排程抓取執行位置 | 使用者電腦（macOS launchd / cron），輸出至本機 SQLite | GitHub Actions cron（免費、免開機），但輸出含個資，需另建私有 repo 或私有儲存；列 Phase 3 |
 | D3 | FB 擷取帳號 | 建議分身帳號，README 明示風險 | 不做 FB CLI 擷取，只保留文字貼上 |
 | D4 | 歷史金鑰 | 撤銷 + 從工作樹移除，不重寫 history | 同時執行 `git filter-repo` |
 | D5 | legacy `src/` | Phase 0–2 不動，README 標示；Phase 3 移除 | Phase 0 直接搬到 `legacy/` |
