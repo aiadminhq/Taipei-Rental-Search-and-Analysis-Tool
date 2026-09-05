@@ -24,6 +24,7 @@
 - **[資料庫結構](./00_Project_Blueprints/資料庫欄位.md)**
 
 ### 開發計畫
+- **[Phase 0–1 實作計畫（core + PWA，2026-09-05）](./superpowers/plans/2026-09-05-pwa-rental-mvp-phase0-1-plan.md)**
 - **[MVP 開發計畫](./01_Development_Plans/MVP_Development_Plan.md)**
 
 ### 技術指南
