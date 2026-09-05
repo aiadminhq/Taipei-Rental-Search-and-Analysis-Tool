@@ -13,7 +13,7 @@
 ## 📋 監控目標
 
 - **監控頁面**: https://www.notion.so/22cb86cbe9ad80a18fbcca277054512a
-- **目標資料庫**: https://www.notion.so/227b86cbe9ad806b9096f90af9094dba
+- **目標資料庫**: https://www.notion.so/your_notion_database_id
 - **處理者簽名**: Augment Agent 🤖
 
 ## 🚀 使用方式
@@ -119,7 +119,7 @@ npm run logs:monitor
 ```env
 # Notion API 設定
 NOTION_API_KEY=your_notion_api_key
-NOTION_DATABASE_ID=227b86cbe9ad806b9096f90af9094dba
+NOTION_DATABASE_ID=your_notion_database_id
 
 # 監控設定
 MIN_SCORE_THRESHOLD=60
