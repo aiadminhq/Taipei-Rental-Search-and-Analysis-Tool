@@ -7,13 +7,10 @@ import { InboxScreen } from './screens/Inbox';
 import { ListingsScreen } from './screens/Listings';
 import { DetailScreen } from './screens/Detail';
 import { CompareScreen } from './screens/Compare';
+import { SettingsScreen } from './screens/Settings';
 import { readSharePayload, stashShare } from './lib/share';
 import { useLive } from './hooks';
 import { db } from './db';
-
-function Placeholder({ name }: { name: string }) {
-  return <main class="mx-auto max-w-lg p-4 pb-24"><h1 class="text-xl font-bold">{name}</h1></main>;
-}
 
 export function App() {
   const route = useHashRoute();
@@ -34,7 +31,7 @@ export function App() {
   else if (detail) screen = <DetailScreen id={detail.id} />;
   else if (route.path === '/inbox') screen = <InboxScreen query={route.query} />;
   else if (route.path === '/compare') screen = <CompareScreen />;
-  else if (route.path === '/settings') screen = <Placeholder name="設定" />;
+  else if (route.path === '/settings') screen = <SettingsScreen />;
   else screen = <ListingsScreen />;
 
   return (
